@@ -23,7 +23,7 @@ export default function ViewOrderDetail() {
   const shipping = order?._derived?.shipping ?? 0;
 
   const currency = items?.[0]?.products?.[0]?.currency || 'USD';
-  const payLabel = order?.payment?.status || 'Pending';
+  const payLabel = order?.payment || 'Pending';
 
   return (
     <section id="order_detail">

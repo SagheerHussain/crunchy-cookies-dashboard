@@ -259,15 +259,13 @@ body,
 
 /* ====== Utility (btns kept minimal) ====== */
 .btn-outline-teal {
-  --bs-btn-color: var(--brand-teal);
-  --bs-btn-border-color: var(--brand-teal);
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: var(--brand-teal);
-  --bs-btn-hover-border-color: var(--brand-teal);
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: var(--brand-teal-700);
-  --bs-btn-active-border-color: var(--brand-teal-700);
-  --bs-btn-focus-shadow-rgb: 15, 180, 187;
+  color: #0fb4bb !important;
+  border: 1px solid #0fb4bb !important;
+}
+.btn-teal {
+  background-color: #0fb4bb !important;
+  color: #fff !important;
+  border: 1px solid #0fb4bb !important;
 }
 
 /* DataGrid small fixes */
@@ -463,3 +461,8 @@ body,
 /* skeleton */
 #order_detail .skeleton.skeleton--list { height: 120px; background: linear-gradient(90deg,#1a1f2e 25%,#20263a 37%,#1a1f2e 63%); background-size: 400% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
 @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
+
+.apexcharts-legend-text {
+  color: #fff !important;
+  margin-left: -10px !important;
+}

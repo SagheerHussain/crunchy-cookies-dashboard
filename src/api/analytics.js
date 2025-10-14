@@ -9,3 +9,11 @@ export async function getOverviewCards() {
   const res = await axios.get(`${BASE}/analytics/overview`);
   return res.data;
 }
+export async function getSales() {
+  const res = await axios.get(`${BASE}/analytics/sales`);
+  return res.data;
+}
+export async function getCounts() {
+  const res = await axios.get(`${BASE}/analytics/counts`);
+  return res.data;
+}
