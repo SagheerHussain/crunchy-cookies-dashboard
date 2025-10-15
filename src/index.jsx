@@ -12,7 +12,6 @@ import { queryClient } from "./config/queryClient";
 import './index.scss';
 
 // -----------------------|| REACT DOM RENDER  ||-----------------------//
-
 const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(

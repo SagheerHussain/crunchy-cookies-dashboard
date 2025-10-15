@@ -33,6 +33,8 @@ export default function AdminLayout() {
 
   let containerClass = ['pc-container'];
 
+  
+
   let adminlayout = (
     <>
       <MobileHeader />

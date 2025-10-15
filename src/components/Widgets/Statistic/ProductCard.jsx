@@ -21,9 +21,9 @@ export default function ProductCard({ params }) {
         </div>
 
         <div className="mc-content">
-          <div className="mc-value">{primaryText}</div>
+          <div className="mc-value">{primaryText ? primaryText : 0}</div>
           <h6 className="mc-title">{title}</h6>
-          {secondaryText ? <div className="mc-sub">{secondaryText}</div> : null}
+          {/* {secondaryText ? <div className="mc-sub">{secondaryText}</div> : null} */}
         </div>
       </Card.Body>
     </Card>

@@ -12,17 +12,25 @@ import { SalesSupportChartData1 } from './chart/sales-support-chart1';
 import SalesAmountPanel from './chart/SalesAmountChart';
 import productData from '../../../data/productTableData';
 import RecentOrder from '../../../components/Widgets/RecentOrder';
-import { getOverviewCards } from '../../../api/analytics';
+import { getCounts, getOverviewCards } from '../../../api/analytics';
+import useCurrentYearOrder from "../../../hooks/analytics/useCurrentYearOrder";
+import useCustomerReviews from "../../../hooks/analytics/useCustomerReviews";
+import { useLocation } from 'react-router-dom';
 
 // -----------------------|| DASHBOARD SALES ||-----------------------//
 export default function DashSales() {
-
+  const [totalCounts, setTotalCounts] = useState({});
   const [overviewCards, setOverviewCards] = useState([]);
+  const currentYearOrders = useCurrentYearOrder();
+  const reviews = useCustomerReviews();
+
+  const location = useLocation();
+  const pathname = location.pathname === "/"
 
   const ordersData = [
-    { date: '2025-01-03', value: 120 },
-    { date: '2025-01-11', value: 80 },
-    { date: '2025-02-05', value: 150 }
+    { date: new Date(2025, 0, 3), value: 120 }, // Jan=0
+    { date: new Date(2025, 0, 11), value: 80 },
+    { date: new Date(2025, 1, 5), value: 150 }
   ];
 
   const recentOrders = [
@@ -41,6 +49,14 @@ export default function DashSales() {
     };
     fetchOverviewCards();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getCounts();
+      const data = { orders: res.orders, sales: res.sales }
+      setTotalCounts(data);
+    })()
+  }, [pathname])
 
   return (
     <>
@@ -99,7 +115,7 @@ export default function DashSales() {
             <Col>
               <Card className="support-bar overflow-hidden" style={{ height: '450px', backgroundColor: '#111' }}>
                 <Card.Body className="pb-0">
-                  <h2 className="m-0" style={{ color: '#fff' }}>$2000</h2>
+                  <h2 className="m-0" style={{ color: '#fff' }}>${totalCounts?.sales}</h2>
                   <span style={{ color: '#0FB4BB' }}>Total Sales</span>
                   <p className="mb-3 mt-3" style={{ color: '#fff' }}>Number of conversions divided by the total visitors.</p>
 
@@ -116,11 +132,11 @@ export default function DashSales() {
             <Col>
               <Card className="support-bar overflow-hidden" style={{ height: '400px', backgroundColor: '#111' }}>
                 <Card.Body className="pb-0">
-                  <h2 className="m-0" style={{ color: '#fff' }}>1432</h2>
+                  <h2 className="m-0" style={{ color: '#fff' }}>{totalCounts?.orders}</h2>
                   <span style={{ color: '#0FB4BB' }}>Order Delivered</span>
-                  <p className="mb-3 mt-3">Number of conversions divided by the total visitors. </p>
+                  <p className="mb-3 mt-3 text-white">Number of conversions divided by the total visitors. </p>
                 </Card.Body>
-                <Chart type="bar" {...SalesSupportChartData1()} />
+                <Chart type="bar" {...SalesSupportChartData1(currentYearOrders)} />
               </Card>
             </Col>
           </Row>
@@ -130,20 +146,20 @@ export default function DashSales() {
             <Card.Body>
               <h6 style={{ color: '#fff' }}>Customer Satisfaction</h6>
               <span style={{ color: '#fff' }}>It takes continuous effort to maintain high customer satisfaction levels Internal and external.</span>
-              <Row className="d-flex justify-content-center align-items-center">
+              <Row className="d-flex justify-content-center align-items-center" style={{ marginTop: "2rem" }}>
                 <Col>
-                  <Chart type="pie" {...SalesCustomerSatisfactionChartData()} />
+                  <Chart type="pie" {...SalesCustomerSatisfactionChartData(reviews)} />
                 </Col>
               </Row>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={12} xl={6}>
+        {/* <Col md={12} xl={6}>
           <ProductTable {...productData} />
         </Col>
         <Col md={12} xl={6}>
           <RecentOrder title="Recent Orders" height={400} rows={recentOrders} />
-        </Col>
+        </Col> */}
       </Row>
     </>
   );

@@ -40,16 +40,21 @@ const Login = lazy(() => import('../views/auth/login'));
 const Register = lazy(() => import('../views/auth/register'));
 
 const Sample = lazy(() => import('../views/sample'));
+import RequireAdmin from './RequireAdmin';
 
 const MainRoutes = {
   path: '/',
   children: [
     {
       path: '/',
-      element: <AdminLayout />,
+      element: (
+        <RequireAdmin>
+          <AdminLayout />
+        </RequireAdmin>
+      ),
       children: [
         {
-          path: '/',
+          path: '/', 
           element: <DashboardSales />
         },
         {
