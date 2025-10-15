@@ -31,7 +31,9 @@ export default function EditCustomer() {
 
   const [form, setForm] = React.useState({
     firstName: '',
+    ar_firstName: '',
     lastName: '',
+    ar_lastName: '',
     email: '',
     phone: '',
     role: '',
@@ -45,7 +47,9 @@ export default function EditCustomer() {
     if (!user?._id) return;
     setForm({
       firstName: user.firstName || '',
+      ar_firstName: user.ar_firstName || '',
       lastName: user.lastName || '',
+      ar_lastName: user.ar_lastName || '',
       email: user.email || '',
       phone: user.phone || '',
       role: user.role || '',
@@ -71,7 +75,9 @@ export default function EditCustomer() {
     }
     const payload = {
       firstName: form.firstName || undefined,
+      ar_firstName: form.ar_firstName || undefined,
       lastName: form.lastName || undefined,
+      ar_lastName: form.ar_lastName || undefined,
       email: form.email || undefined,
       phone: form.phone || undefined,
       role: form.role || undefined,
@@ -119,7 +125,15 @@ export default function EditCustomer() {
                 sx={{ '& .MuiInputBase-input': { color: '#e5e7eb' }, '& .MuiFormLabel-root': { color: '#cbd5e1' } }} />
             </Grid>
             <Grid item sx={{ width: '24%' }}>
+              <TextField label="First Name (ar)" size="small" fullWidth value={form.ar_firstName} onChange={onChange('ar_firstName')}
+                sx={{ '& .MuiInputBase-input': { color: '#e5e7eb' }, '& .MuiFormLabel-root': { color: '#cbd5e1' } }} />
+            </Grid>
+            <Grid item sx={{ width: '24%' }}>
               <TextField label="Last Name" size="small" fullWidth value={form.lastName} onChange={onChange('lastName')}
+                sx={{ '& .MuiInputBase-input': { color: '#e5e7eb' }, '& .MuiFormLabel-root': { color: '#cbd5e1' } }} />
+            </Grid>
+            <Grid item sx={{ width: '24%' }}>
+              <TextField label="Last Name" size="small" fullWidth value={form.ar_lastName} onChange={onChange('ar_lastName')}
                 sx={{ '& .MuiInputBase-input': { color: '#e5e7eb' }, '& .MuiFormLabel-root': { color: '#cbd5e1' } }} />
             </Grid>
             <Grid item sx={{ width: '24%' }}>

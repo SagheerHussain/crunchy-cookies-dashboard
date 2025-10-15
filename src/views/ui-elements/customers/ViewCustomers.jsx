@@ -32,8 +32,22 @@ export default function ViewCustomers() {
       filterable: false,
     },
     {
+      field: "ar_firstName",
+      headerName: "First Name (ar)",
+      width: 150,
+      sortable: false,
+      filterable: false,
+    },
+    {
       field: "lastName",
       headerName: "Last Name",
+      width: 150,
+      sortable: false,
+      filterable: false,
+    },
+    {
+      field: "ar_lastName",
+      headerName: "Last Name (ar)",
       width: 150,
       sortable: false,
       filterable: false,
