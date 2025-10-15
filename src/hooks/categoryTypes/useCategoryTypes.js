@@ -16,6 +16,7 @@ export function useCategoryTypes(params = {}) {
       const rows = items.map((it, idx) => ({
         id: it._id || it.id || idx,
         name: it.name || "",
+        ar_name: it.ar_name || "",
         slug: it.slug || "",
         isActive: it.isActive || "",
         parent: it?.parent?.name || "",

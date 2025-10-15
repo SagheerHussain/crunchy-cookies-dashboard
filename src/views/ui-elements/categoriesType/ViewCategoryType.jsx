@@ -40,6 +40,7 @@ export default function ViewCategoryType() {
   const columns = React.useMemo(
     () => [
       { field: 'name', headerName: 'Name', flex: 1, width: 220 },
+      { field: 'ar_name', headerName: 'Ar Name', flex: 1, width: 220 },
       { field: 'slug', headerName: 'Slug', flex: 1, width: 220 },
       {
         field: 'isActive',

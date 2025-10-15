@@ -31,6 +31,7 @@ const AddOrEditCategory = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     image: null, // File object if newly picked
     imagePreview: '' // blob: or http(s) URL
   });
@@ -52,6 +53,7 @@ const AddOrEditCategory = () => {
     setForm((prev) => ({
       ...prev,
       name: detail.name || '',
+      ar_name: detail.ar_name || '',
       image: null, // new file none
       imagePreview: detail.image || detail.imageUrl || ''
     }));
@@ -104,6 +106,7 @@ const AddOrEditCategory = () => {
 
     const fd = new FormData();
     fd.append('name', form.name.trim());
+    fd.append('ar_name', form.ar_name.trim());
     if (form.image) fd.append('image', form.image); // only send if new file picked
 
     try {
@@ -143,18 +146,30 @@ const AddOrEditCategory = () => {
               <CardHeader title="Basics" sx={{ pb: 0 }} />
               <CardContent>
                 <div container spacing={2}>
-                  <div className='text_field'>
-                    <TextField
-                      label="Name *"
-                      fullWidth
-                      required
-                      value={form.name}
-                      disabled={disabled}
-                      onChange={(e) => setField('name', e.target.value)}
-                    />
+                  <div className="d-flex" style={{ gap: 10 }}>
+                    <div className="text_field" style={{ width: '50%' }}>
+                      <TextField
+                        label="Name *"
+                        fullWidth
+                        required
+                        value={form.name}
+                        disabled={disabled}
+                        onChange={(e) => setField('name', e.target.value)}
+                      />
+                    </div>
+                    <div className="text_field" style={{ width: '50%' }}>
+                      <TextField
+                        label="Name (Arabic) *"
+                        fullWidth
+                        required
+                        value={form.ar_name}
+                        disabled={disabled}
+                        onChange={(e) => setField('ar_name', e.target.value)}
+                      />
+                    </div>
                   </div>
 
-                  <div className='mt-4'>
+                  <div className="mt-4">
                     <Stack spacing={1.2}>
                       <Typography variant="caption" sx={{ opacity: 0.9 }}>
                         Image *

@@ -19,6 +19,7 @@ const AddOrEditBrands = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     countryCode: '',
     logoFile: null, // File object (new upload)
     logoPreview: '' // URL for preview (blob: OR http(s) from server)
@@ -62,6 +63,7 @@ const AddOrEditBrands = () => {
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
+      ar_name: detail?.ar_name || '',
       countryCode: detail?.countryCode || '',
       logoFile: null,
       logoPreview: detail?.logo || detail?.logoUrl || ''
@@ -105,6 +107,7 @@ const AddOrEditBrands = () => {
 
     const fd = new FormData();
     fd.append('name', form.name.trim());
+    fd.append('ar_name', form.ar_name.trim());
     fd.append('countryCode', form.countryCode || '');
     if (form.logoFile) fd.append('logo', form.logoFile);
 
@@ -150,6 +153,16 @@ const AddOrEditBrands = () => {
                         value={form.name}
                         disabled={disabled}
                         onChange={(e) => setField('name', e.target.value)}
+                      />
+                    </Grid>
+                    <Grid sx={{ width: '49%' }} item xs={12} md={6}>
+                      <TextField
+                        label="Name (Arabic) *"
+                        fullWidth
+                        required
+                        value={form.ar_name}
+                        disabled={disabled}
+                        onChange={(e) => setField('ar_name', e.target.value)}
                       />
                     </Grid>
 

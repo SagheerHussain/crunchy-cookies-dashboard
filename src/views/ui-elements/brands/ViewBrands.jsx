@@ -56,6 +56,7 @@ export default function ViewBrands() {
       )
     },
     { field: 'name', headerName: 'Name', width: 250 },
+    { field: 'ar_name', headerName: 'Name (Arabic)', width: 200 },
     { field: 'slug', headerName: 'Slug', width: 250 },
     { field: 'countryCode', headerName: 'Country Code', flex: 1, minWidth: 250 },
     {

@@ -19,6 +19,7 @@ const AddOrEditColors = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     value: '',
     mode: 'hex',
   });
@@ -45,6 +46,7 @@ const AddOrEditColors = () => {
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
+      ar_name: detail?.ar_name || '',
       value: detail?.value || '',
       mode: (detail?.mode || 'hex').toLowerCase(),
     }));
@@ -65,6 +67,7 @@ const AddOrEditColors = () => {
     // ✅ send JSON (server expects JSON)
     const body = {
       name: form.name.trim(),
+      ar_name: form.ar_name.trim(),
       value: form.value.trim(),
       mode: (form.mode || 'hex').toLowerCase(),
     };
@@ -104,6 +107,17 @@ const AddOrEditColors = () => {
                       value={form.name}
                       disabled={disabled}
                       onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                    />
+                  </Grid>
+
+                  <Grid sx={{ width: '32%' }} item xs={12} md={6}>
+                    <TextField
+                      label="Name (Arabic) *"
+                      fullWidth
+                      required
+                      value={form.ar_name}
+                      disabled={disabled}
+                      onChange={(e) => setForm((p) => ({ ...p, ar_name: e.target.value }))}
                     />
                   </Grid>
 

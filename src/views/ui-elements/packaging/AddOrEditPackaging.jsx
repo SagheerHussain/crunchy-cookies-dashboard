@@ -18,7 +18,9 @@ const AddOrEditPackaging = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     materials: [], // array of strings
+    ar_materials: [], // array of strings
   });
 
   const { id } = useParams();
@@ -42,7 +44,9 @@ const AddOrEditPackaging = () => {
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
+      ar_name: detail?.ar_name || '',
       materials: Array.isArray(detail?.materials) ? detail.materials : [],
+      ar_materials: Array.isArray(detail?.ar_materials) ? detail.ar_materials : [],
     }));
     hydratedRef.current = true;
   }, [isEdit, detail]);
@@ -72,10 +76,13 @@ const AddOrEditPackaging = () => {
 
     const fd = new FormData();
     fd.append('name', form.name.trim());
-
+    fd.append('ar_name', form.ar_name.trim());
     // ✅ send as array — prefer this if your backend accepts "materials[]" repeated
     for (const m of form.materials.map(sanitize).filter(Boolean)) {
       fd.append('materials[]', m);
+    }
+    for (const m of form.ar_materials.map(sanitize).filter(Boolean)) {
+      fd.append('ar_materials[]', m);
     }
     // OR: if your backend expects JSON: fd.append('materials', JSON.stringify(form.materials));
 
@@ -111,6 +118,16 @@ const AddOrEditPackaging = () => {
                       value={form.name}
                       disabled={disabled}
                       onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                    />
+                  </Grid>
+                  <Grid sx={{ width: '49%' }} item xs={12} md={6}>
+                    <TextField
+                      label="Name (Arabic) *"
+                      fullWidth
+                      required
+                      value={form.ar_name}
+                      disabled={disabled}
+                      onChange={(e) => setForm((p) => ({ ...p, ar_name: e.target.value }))}
                     />
                   </Grid>
 
@@ -151,6 +168,44 @@ const AddOrEditPackaging = () => {
                       )}
                     />
                   </Grid>
+
+                  <Grid sx={{ width: '49%' }} item xs={12} md={6}>
+                    <Autocomplete
+                      multiple
+                      freeSolo
+                      options={[]}                 // no predefined options
+                      value={form.ar_materials}
+                      onChange={(_, values) => {
+                        // values can include strings or objects; keep strings only
+                        const cleaned = dedupe(
+                          (values || [])
+                            .map((v) => (typeof v === 'string' ? v : String(v?.label ?? v?.value ?? '')))
+                            .map(sanitize)
+                            .filter(Boolean)
+                        );
+                        setForm((p) => ({ ...p, ar_materials: cleaned }));
+                      }}
+                      filterSelectedOptions
+                      disableCloseOnSelect
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Materials (Arabic) * (press Enter to add)"
+                          placeholder="e.g., Plastic, Paper, Glass"
+                          disabled={disabled}
+                          onKeyDown={(e) => {
+                            // also allow comma to commit a tag
+                            if (e.key === ',' && e.currentTarget.value) {
+                              e.preventDefault();
+                              const next = dedupe([...form.ar_materials, sanitize(e.currentTarget.value)].filter(Boolean));
+                              setForm((p) => ({ ...p, ar_materials: next }));
+                            }
+                          }}
+                        />
+                      )}
+                    />
+                  </Grid>
+
                 </Grid>
               </CardContent>
             </Card>
