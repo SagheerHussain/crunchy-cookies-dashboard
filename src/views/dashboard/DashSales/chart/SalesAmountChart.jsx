@@ -29,7 +29,7 @@ export default function SalesAmountPanelFromApi({ tz = 'UTC', status = 'delivere
   const [filter, setFilter] = useState('currentYear'); // currentMonth | currentYear | overall
   const data = useLiveSalesBreakdown({ intervalMs: pollMs, tz, status, dateField });
 
-  console.log(data)
+  console.log("sales breakdown", data)
 
   const { categories, values, titleNote, headerTotal } = useMemo(() => {
     if (!data) return { categories: [], values: [], titleNote: '', headerTotal: 0 };

@@ -7,7 +7,7 @@ export default function useCustomerReviews() {
     let aborted = false;
     const base = (import.meta.env.VITE_BASE_URL || "http://localhost:5000")
       .replace(/\/$/, "");
-    const url = `http://localhost:5000/api/v1/analytics/customer-reviews`;
+    const url = `https://crunchy-cookies-server.onrender.com/api/v1/analytics/customer-reviews`;
 
     (async () => {
       try {
