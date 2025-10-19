@@ -38,8 +38,10 @@ export default function ViewPackaging() {
 
   const columns = [
     { field: 'name', headerName: 'Name', width: 250 },
+    { field: 'ar_name', headerName: 'Name (Arabic)', width: 250 },
     { field: 'slug', headerName: 'Slug', width: 250 },
     { field: 'materials', headerName: 'Materials', width: 250, renderCell: (params) => params?.row?.materials?.map((m) => m).join(', ') },
+    { field: 'ar_materials', headerName: 'Materials (Arabic)', width: 250, renderCell: (params) => params?.row?.ar_materials?.map((m) => m).join(', ') },
     {
       field: 'isActive',
       headerName: 'Active',

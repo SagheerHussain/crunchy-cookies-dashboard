@@ -69,6 +69,7 @@ export default function CategoriesTable() {
         )
       },
       { field: 'name', headerName: 'Name', flex: 1, width: 220 },
+      { field: 'ar_name', headerName: 'Name (Arabic)', flex: 1, width: 220 },
       { field: 'slug', headerName: 'Slug', flex: 1, width: 220 },
       {
         field: 'isActive',

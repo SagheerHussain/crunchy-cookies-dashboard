@@ -65,6 +65,7 @@ export default function ViewRecipient() {
       ),
     },
     { field: "name", headerName: "Name", width: 250 },
+    { field: "ar_name", headerName: "Ar Name", width: 200 },
     { field: "slug", headerName: "Slug", width: 250 },
     {
       field: "isActive",

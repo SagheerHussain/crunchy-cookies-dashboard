@@ -65,6 +65,7 @@ export default function ViewOccasion() {
       ),
     },
     { field: "name", headerName: "Name", width: 250 },
+    { field: "ar_name", headerName: "Name (Arabic)", width: 250 },
     { field: "slug", headerName: "Slug", width: 250 },
     {
       field: "isActive",

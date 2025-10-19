@@ -18,8 +18,10 @@ export function usePackaging(params = {}) {
       const rows = items.map((it, idx) => ({
         id: it._id || it.id || idx,
         name: it.name || "",
+        ar_name: it.ar_name || "",  
         slug: it.slug || "",
         materials: it.materials || "",
+        ar_materials: it.ar_materials || "",
         isActive: it.isActive || "",
         image: it?.image || "",
       }));

@@ -33,6 +33,7 @@ const AddOrEditCategoryType = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     parent: '', // stores PARENT CATEGORY id (from categories.rows)
   });
 
@@ -51,6 +52,7 @@ const AddOrEditCategoryType = () => {
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
+      ar_name: detail?.ar_name || '',
       // normalize parent id whether backend sends object or id
       parent: detail?.parent?._id || detail?.parent?.id || detail?.parent || '',
     }));
@@ -75,6 +77,7 @@ const AddOrEditCategoryType = () => {
 
     const fd = new FormData();
     fd.append('name', form.name.trim());
+    fd.append('ar_name', form.ar_name.trim());
     fd.append('parent', form.parent || ''); // must be the category id
 
     try {
@@ -83,7 +86,7 @@ const AddOrEditCategoryType = () => {
       } else {
         await addMutation.mutateAsync(fd);
         // reset for add
-        setForm({ name: '', parent: '' });
+        setForm({ name: '', ar_name: '', parent: '' });
       }
       // go back to list; adjust route if needed
       navigate(-1);
@@ -113,6 +116,17 @@ const AddOrEditCategoryType = () => {
                       value={form.name}
                       disabled={disabled}
                       onChange={(e) => setField('name', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div style={{ width: '50%' }}>
+                    <TextField
+                      label="Name (Arabic) *"
+                      fullWidth
+                      required
+                      value={form.ar_name}
+                      disabled={disabled}
+                      onChange={(e) => setField('ar_name', e.target.value)}
                     />
                   </div>
 

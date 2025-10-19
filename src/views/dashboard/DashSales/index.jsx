@@ -58,6 +58,8 @@ export default function DashSales() {
     })()
   }, [pathname])
 
+  console.log("overviewCards", overviewCards);
+
   return (
     <>
       <Row>
@@ -67,7 +69,7 @@ export default function DashSales() {
               <ProductCard
                 params={{
                   title: 'Net Profit',
-                  primaryText: `$ ${overviewCards?.netProfit}`,
+                  primaryText: `$ ${overviewCards?.netProfit?.toFixed(2)}`,
                   secondaryText: 'Total Amount',
                   icon: 'payments',
                   tone: 'neutral'
@@ -100,7 +102,7 @@ export default function DashSales() {
               <ProductCard
                 params={{
                   title: 'Remaining Amount',
-                  primaryText: `$ ${overviewCards?.expectedAmount}`,
+                  primaryText: `$ ${overviewCards?.expectedAmount?.toFixed(2)}`,
                   secondaryText: 'Expected Amount',
                   icon: 'local_offer',
                   tone: 'warning'

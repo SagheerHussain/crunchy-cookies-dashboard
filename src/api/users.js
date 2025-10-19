@@ -1,6 +1,7 @@
 // src/api/users.js
 import axios from "axios";
 const BASE = import.meta.env.VITE_BASE_URL || "https://crunchy-cookies-server.onrender.com/api/v1";
+// const BASE = "http://localhost:5000/api/v1";
 
 export async function getUsersLists() {
   const res = await axios.get(`${BASE}/user/lists`);

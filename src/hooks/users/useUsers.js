@@ -18,7 +18,9 @@ export function useUsers(params = {}) {
       const rows = items.map((it, idx) => ({
         id: it?._id || it?.id || idx,
         firstName: it?.firstName || "",
+        ar_firstName: it?.ar_firstName || "",
         lastName: it?.lastName || "",
+        ar_lastName: it?.ar_lastName || "",
         email: it?.email || "",
         phone: it?.phone || "",
         role: it?.role || "",

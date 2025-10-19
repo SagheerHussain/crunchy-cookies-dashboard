@@ -39,9 +39,12 @@ const optionsByIds = (opts, ids = []) => opts.filter((o) => ids?.includes?.(o._i
 /* ================== Default Form ================== */
 const defaultForm = {
   title: '',
+  ar_title: '',
   sku: '',
   description: '',
+  ar_description: '',
   qualities: [],
+  ar_qualities: [],
 
   price: '',
   discount: 0,
@@ -123,9 +126,12 @@ export default function AddOrEditProduct() {
     const p = detail;
     const next = {
       title: p.title ?? '',
+      ar_title: p.ar_title ?? '',
       sku: p.sku ?? '',
       description: p.description ?? '',
+      ar_description: p.ar_description ?? '',
       qualities: Array.isArray(p.qualities) ? p.qualities : [],
+      ar_qualities: Array.isArray(p.ar_qualities) ? p.ar_qualities : [],
 
       price: p.price ?? '',
       discount: p.discount ?? 0,
@@ -213,8 +219,10 @@ export default function AddOrEditProduct() {
 
     // primitives
     fd.append('title', (form.title || '').trim());
+    fd.append('ar_title', (form.ar_title || '').trim());
     fd.append('sku', (form.sku || '').trim());
     fd.append('description', form.description || '');
+    fd.append('ar_description', form.ar_description || '');
     fd.append('price', form.price === '' || form.price == null ? '' : String(form.price));
     fd.append('discount', form.discount === '' || form.discount == null ? '0' : String(form.discount));
     fd.append('currency', form.currency || 'QAR');
@@ -228,6 +236,7 @@ export default function AddOrEditProduct() {
 
     // arrays / objects (JSON)
     fd.append('qualities', JSON.stringify(form.qualities || []));
+    fd.append('ar_qualities', JSON.stringify(form.ar_qualities || []));
     fd.append('categories', JSON.stringify(form.categories || []));
     fd.append('occasions', JSON.stringify(form.occasions || []));
     fd.append('recipients', JSON.stringify(form.recipients || []));
@@ -316,6 +325,15 @@ export default function AddOrEditProduct() {
                   </Grid>
                   <Grid item style={{ width: '32%' }}>
                     <TextField
+                      label="Title (Arabic) *"
+                      fullWidth
+                      value={form.ar_title}
+                      disabled={saving}
+                      onChange={(e) => setField('ar_title', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item style={{ width: '32%' }}>
+                    <TextField
                       label="SKU *"
                       fullWidth
                       value={form.sku}
@@ -336,6 +354,19 @@ export default function AddOrEditProduct() {
                       renderInput={(p) => <TextField {...p} label="Qualities (press Enter to add)" disabled={saving} />}
                     />
                   </Grid>
+                  <Grid item style={{ width: '33.5%' }}>
+                    <Autocomplete
+                      multiple
+                      freeSolo
+                      options={[]}
+                      value={form.ar_qualities}
+                      onChange={(_, v) => setField('ar_qualities', v)}
+                      renderTags={(value, getTagProps) =>
+                        value.map((opt, i) => <Chip key={opt + i} variant="outlined" label={opt} {...getTagProps({ index: i })} />)
+                      }
+                      renderInput={(p) => <TextField {...p} label="Qualities (press Enter to add)" disabled={saving} />}
+                    />
+                  </Grid>
 
                   <Grid item style={{ width: '100%' }}>
                     <Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -350,6 +381,20 @@ export default function AddOrEditProduct() {
                       placeholder="Write a rich description..."
                     />
                   </Grid>
+                  <Grid item style={{ width: '100%' }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      Description (Arabic)
+                    </Typography>
+                    <ReactQuill
+                      style={{ height: '100px', marginBottom: '2rem' }}
+                      theme="snow"
+                      value={form.ar_description}
+                      onChange={(html) => setField('ar_description', html)}
+                      readOnly={saving}
+                      placeholder="Write a rich description..."
+                    />
+                  </Grid>
+
                 </Grid>
               </CardContent>
             </Card>

@@ -20,6 +20,7 @@ const AddOrEditRecipient = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     imageFile: null, // File object (new upload)
     imagePreview: '' // URL for preview (blob: OR http(s) from server)
   });
@@ -76,6 +77,7 @@ const AddOrEditRecipient = () => {
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
+      ar_name: detail?.ar_name || '',
       imageFile: null,
       imagePreview: detail?.image || detail?.imageUrl || ''
     }));
@@ -87,9 +89,11 @@ const AddOrEditRecipient = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
+    if (!form.ar_name.trim()) return;
   
     const fd = new FormData();
     fd.append('name', form.name.trim());
+    fd.append('ar_name', form.ar_name.trim());
     if (form.imageFile) fd.append('image', form.imageFile);
   
     try {
@@ -99,7 +103,7 @@ const AddOrEditRecipient = () => {
         await addMutation(fd);
         // reset for add
         revokeIfBlob(form.imagePreview);
-        setForm({ name: '', imageFile: null, imagePreview: '' });
+        setForm({ name: '', ar_name: '', imageFile: null, imagePreview: '' });
       }
       // IMPORTANT
       navigate("/recipients", { replace: true });
@@ -127,7 +131,7 @@ const AddOrEditRecipient = () => {
                 <CardHeader title="Basics" sx={{ pb: 0 }} />
                 <CardContent>
                   <Grid container spacing={2} alignItems="stretch">
-                    <Grid item style={{ width: '100%' }}>
+                    <Grid item style={{ width: '49%' }}>
                       <TextField
                         label="Name *"
                         fullWidth
@@ -135,6 +139,17 @@ const AddOrEditRecipient = () => {
                         value={form.name}
                         disabled={disabled}
                         onChange={(e) => setField('name', e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item style={{ width: '49%' }}>
+                      <TextField
+                        label="Name (Arabic) *"
+                        fullWidth
+                        required
+                        value={form.ar_name}
+                        disabled={disabled}
+                        onChange={(e) => setField('ar_name', e.target.value)}
                       />
                     </Grid>
 

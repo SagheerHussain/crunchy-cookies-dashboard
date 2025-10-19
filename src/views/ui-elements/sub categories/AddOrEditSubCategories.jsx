@@ -33,6 +33,7 @@ const AddOrEditSubCategories = () => {
 
   const [form, setForm] = React.useState({
     name: '',
+    ar_name: '',
     parent: '', // stores PARENT CATEGORY id (from categories.rows)
     image: null, // File
     imagePreview: '' // blob: or http(s)
@@ -53,6 +54,7 @@ const AddOrEditSubCategories = () => {
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
+      ar_name: detail?.ar_name || '',
       // normalize parent id whether backend sends object or id
       parent: detail?.parent?._id || detail?.parent?.id || detail?.parent || '',
       image: null,
@@ -99,9 +101,11 @@ const AddOrEditSubCategories = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
+    if (!form.ar_name.trim()) return;
 
     const fd = new FormData();
     fd.append('name', form.name.trim());
+    fd.append('ar_name', form.ar_name.trim());
     fd.append('parent', form.parent || ''); // must be the category id
     if (form.image) fd.append('image', form.image);
 
@@ -143,6 +147,16 @@ const AddOrEditSubCategories = () => {
                       value={form.name}
                       disabled={disabled}
                       onChange={(e) => setField('name', e.target.value)}
+                    />
+                  </div>
+                  <div style={{ width: '50%' }}>
+                    <TextField
+                      label="Name (Arabic) *"
+                      fullWidth
+                      required
+                      value={form.ar_name}
+                      disabled={disabled}
+                      onChange={(e) => setField('ar_name', e.target.value)}
                     />
                   </div>
 
