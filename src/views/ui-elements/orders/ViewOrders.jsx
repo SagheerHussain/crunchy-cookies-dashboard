@@ -66,7 +66,7 @@ export default function ViewOrders() {
 
   // ---------- helpers ----------
   const safe = (v, f = '__') => (v === null || v === undefined || v === '' ? f : v);
-  const toCurrency = (n) => (Number.isFinite(Number(n)) ? `$${Number(n).toLocaleString()}` : '__');
+  const toCurrency = (n) => (Number.isFinite(Number(n)) ? `QAR ${Number(n).toLocaleString()}` : '__');
   const toDate = (d) => {
     const dt = d ? new Date(d) : null;
     return dt && !isNaN(dt) ? dt.toLocaleDateString() : '__';
@@ -196,14 +196,19 @@ export default function ViewOrders() {
       }
     },
 
-    { field: 'amount', headerName: 'Total Amount', width: 150, renderCell: (p) => <span>{toCurrency(p.row.amount)}</span> },
-    { field: 'tax', headerName: 'Tax Amount', width: 130, renderCell: (p) => <span>{toCurrency(p.row.tax)}</span> },
+    { field: 'tax', headerName: 'Delivery Charges', width: 130, renderCell: (p) => <span>{toCurrency(p.row.tax)}</span> },
     {
       field: 'avgDiscount',
-      headerName: 'Discount',
+      headerName: 'Coupon Discount',
       width: 130,
-      renderCell: (p) => <span>{safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}</span>
+      renderCell: (p) => 
+      <span>
+        {p.row.couponType === "fixed" && "QAR "} 
+        {safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}
+        {p.row.couponType === "percentage" && "%"} 
+      </span>
     },
+    { field: 'amount', headerName: 'Grand Total', width: 150, renderCell: (p) => <span>{toCurrency(p.row.amount)}</span> },
 
     {
       field: 'payment',
@@ -239,6 +244,7 @@ export default function ViewOrders() {
     },
 
     { field: 'placedAt', headerName: 'Place Date', width: 170, renderCell: (p) => <span>{toDate(p.row.placedAt)}</span> },
+    { field: 'deliveredAt', headerName: 'Delivery Date', width: 170, renderCell: (p) => <span>{toDate(p.row.placedAt)}</span> },
 
     {
       field: 'actions',
