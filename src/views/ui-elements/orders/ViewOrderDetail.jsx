@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOrderDetail } from '../../../hooks/orders/useOrders';
 
-const money = (n, curr = 'USD') => `${curr === 'QAR' ? 'ر.ق' : curr === 'PKR' ? '₨' : '$'}${Number(n || 0).toLocaleString()}`;
+const money = (n, curr = 'USD') => `${curr === 'QAR' ? 'QAR' : curr === 'PKR' ? '₨' : '$'} ${Number(n || 0).toLocaleString()}`;
 
 const chip = (text, tone) => (
   <span className={`chip ${tone}`}>
@@ -18,11 +18,11 @@ export default function ViewOrderDetail() {
   const navigate = useNavigate();
   const { data: order, isLoading } = useOrderDetail(id);
 
-  const items = order?.items?.products ?? [];
-  const discount = order?._derived?.discount ?? 0;
-  const shipping = order?._derived?.shipping ?? 0;
+  const items = order?.items ?? [];
+  const discount = order?.appliedCoupon?.value ?? 0;
+  const shipping = order?.taxAmount ?? 0;
 
-  const currency = items?.[0]?.products?.[0]?.currency || 'USD';
+  const subTotal = order?.items?.reduce((accu, item) => accu + (item?.totalAmount || 0), 0);
   const payLabel = order?.payment || 'Pending';
 
   return (
@@ -50,7 +50,32 @@ export default function ViewOrderDetail() {
                 </div>
               </div>
             </div>
-            <div className="od__sub">January 8, 2024 at 9:48 pm from Draft Orders</div>
+            <div className="od__sub">
+              <span style={{ color: "orange" }}>Placed Date : </span>
+              {order?.placedAt
+                ? new Date(order.placedAt).toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })
+                : '—'}
+            </div>
+            <div className="od__sub">
+              <span style={{ color: "#31d300" }}>Delivery Date : </span>
+              {order?.deliveredAt
+                ? new Date(order.deliveredAt).toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })
+                : '—'}
+            </div>
           </div>
         </div>
 
@@ -82,30 +107,30 @@ export default function ViewOrderDetail() {
               {/* LINE ITEMS */}
               {isLoading ? (
                 <div className="skeleton skeleton--list" />
-              ) : items.length ? (
-                items.map((it) => {
+              ) : items?.length ? (
+                items?.map((it) => {
                   return (
                     <div className="li" key={it?._id}>
                       <div className="li__left">
-                        <img className="li__img" src={it?.featuredImage} alt={it?.title} />
+                        <img className="li__img" src={it?.products?.featuredImage} alt={it?.title} />
                         <div>
                           <div className="li__title">
-                            <span className="li__name">{it?.title}</span>
+                            <span className="li__name">{it?.products?.title}</span>
                           </div>
                           <div className="li__opts">
                             <span style={{ fontSize: '16px', padding: '6px 0' }}>
-                              {it?.currency} {it?.price?.toFixed(2)}
+                              QAR {it?.products?.price?.toFixed(2)}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div>
                         <div className="li__mid" style={{ textAlign: 'right', marginBottom: '6px' }}>
-                          <span className="li__qty">Qty: {order?.items?.quantity}</span>
+                          <span className="li__qty">Qty: {it?.quantity}</span>
                         </div>
                         <div className="li__right">
                           <span className="li__price">
-                            {it?.currency} {order?.items?.totalAmount}
+                            QAR {it?.totalAmount}
                           </span>
                         </div>
                       </div>
@@ -132,7 +157,7 @@ export default function ViewOrderDetail() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '18px' }}>Coupon:</span>
                 <div className="couponbar__codes">
-                  <span className="code">{order?.appliedCoupon}</span>
+                  <span className="code">{order?.appliedCoupon?.code}</span>
                 </div>
               </div>
 
@@ -140,30 +165,25 @@ export default function ViewOrderDetail() {
                 <div className="row">
                   <span style={{ fontSize: '18px' }}>Subtotal</span>
                   <span className="muted">
-                    {order?.totalItems} item{items.length !== 1 ? 's' : ''}
+                    {order?.totalItems} item{items?.length !== 1 ? 's' : ''}
                   </span>
-                  <span>QAR {order?.totalAmount}</span>
+                  <span>QAR {subTotal}</span>
                 </div>
                 <div className="row">
                   <span style={{ fontSize: '18px' }}>Discount</span>
-                  <span className="muted">{order?.appliedCoupon ? 'Applied coupon' : '—'}</span>
-                  <span className={`neg ${discount ? '' : 'muted'}`}>-{order?.items?.avgDiscount}%</span>
+                  <span className="muted">{order?.appliedCoupon?.code ? 'Applied coupon' : '—'}</span>
+                  <span className={`neg ${discount ? '' : 'muted'}`}>-{order?.appliedCoupon?.value}%</span>
                 </div>
                 <div className="row">
-                  <span style={{ fontSize: '18px' }}>Shipping</span>
+                  <span style={{ fontSize: '18px' }}>Delivery Charges</span>
                   <span className="muted">{shipping ? '' : ''}</span>
-                  <span>{money(shipping, currency)}</span>
-                </div>
-                <div className="row">
-                  <span style={{ fontSize: '18px' }}>Tax Deduction</span>
-                  <span className="muted">{shipping ? '' : ''}</span>
-                  <span>QAR {order?.taxAmount}</span>
+                  <span>{money(shipping, 'QAR')}</span>
                 </div>
                 <div className="divider" />
                 <div className="row total">
                   <span style={{ fontSize: '18px' }}>Grand Total</span>
                   <span />
-                  <span>QAR {order?.totalAmount + order?.taxAmount}</span>
+                  <span>QAR {order?.grandTotal}</span>
                 </div>
               </div>
             </section>
@@ -171,21 +191,35 @@ export default function ViewOrderDetail() {
 
           {/* RIGHT */}
           <aside className="od__right">
-            <section className="card">
-              <div className="card__head">
-                <h4>Delivery Instructions</h4>
-              </div>
-              <p className="muted">{order?.deliveryInstructions || '—'}</p>
-            </section>
+
+            {
+              order?.cancelReason &&
+              <section className="card">
+                <div className="card__head">
+                  <h4>Cancel Reason</h4>
+                </div>
+                <p className="muted">{order?.cancelReason || '—'}</p>
+              </section>
+            }
+
+            {
+              order?.satisfaction &&
+              <section className="card">
+                <div className="card__head">
+                  <h4>Customer Satisfaction</h4>
+                </div>
+                <p className="muted">{order?.satisfaction || '—'}</p>
+              </section>
+            }
 
             <section className="card">
               <div className="card__head">
                 <h4>Customers</h4>
               </div>
               <div className="cust">
-                <div className="cust__name">{order?.user?.firstname || 'Guest'}</div>
+                <div className="cust__name">{order?.user?.firstName + " " + order?.user?.lastName || 'Guest'}</div>
                 <div className="muted" style={{ margin: '10px 0' }}>
-                  {order?.totalItems ? `${order.totalItems} Orders` : '1 Order'}
+                  {order?.totalItems ? `${order?.totalItems} Orders` : '1 Order'}
                 </div>
                 <div className="muted">{order?.taxAmount ? 'Customer is tax-exempt' : ''}</div>
               </div>

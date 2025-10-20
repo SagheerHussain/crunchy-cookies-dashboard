@@ -18,16 +18,18 @@ export function useOrders(params = {}) {
       const rows = items.map((it, idx) => ({
         id: it._id || it.id || idx,
         code: it.code || "",
-        user: it.user?.firstname || "__",
+        user: it.user?.firstName + ' ' + it?.user?.lastName || "__",
         totalItems: it?.totalItems ?? 0,
-        amount: it?.totalAmount ?? 0,
+        amount: it?.grandTotal ?? 0,
         tax: it?.taxAmount ?? 0,
-        avgDiscount: it?.items?.avgDiscount ?? 0,
+        avgDiscount: it?.appliedCoupon?.value ?? 0,
+        couponType: it?.appliedCoupon?.type ?? 0,
         status: it.status || "",
         cancelReason: it?.cancelReason || "",
         payment: it?.payment || "Pending",
         placedAt: it?.placedAt || "",
-        appliedCoupon: it?.appliedCoupon || "",
+        deliveredAt: it?.deliveredAt || "__",
+        appliedCoupon: it?.appliedCoupon || "__",
       }));
 
       return { rows, success: payload?.success ?? true, message: payload?.message ?? "" };

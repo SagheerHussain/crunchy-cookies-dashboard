@@ -10,7 +10,7 @@ export default function useLiveSalesBreakdown({ intervalMs = 10000, tz = 'UTC', 
         const load = async () => {
             try {
                 const qs = new URLSearchParams({ tz, status, dateField }).toString();
-                const res = await fetch(`http://localhost:5000/api/v1/analytics/sales?${qs}`, {
+                const res = await fetch(`https://crunchy-cookies-server.onrender.com/api/v1/analytics/sales?${qs}`, {
                     cache: 'no-store', // avoid browser cache
                     headers: { 'Cache-Control': 'no-store' }
                 });

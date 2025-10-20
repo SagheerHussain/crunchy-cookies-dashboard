@@ -9,7 +9,7 @@ export default function useCurrentYearOrder() {
 
     const base =
       (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, ""); // remove trailing slash
-    const url = `http://localhost:5000/api/v1/analytics/current-year-order`;
+    const url = `https://crunchy-cookies-server.onrender.com/api/v1/analytics/current-year-order`;
 
     const load = async () => {
       try {
