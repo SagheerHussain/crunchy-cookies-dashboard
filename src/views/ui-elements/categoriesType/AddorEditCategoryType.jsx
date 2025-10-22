@@ -34,6 +34,8 @@ const AddOrEditCategoryType = () => {
   const [form, setForm] = React.useState({
     name: '',
     ar_name: '',
+    totalStocks: 0,
+    totalPieceUsed: 0,
     parent: '', // stores PARENT CATEGORY id (from categories.rows)
   });
 
@@ -53,7 +55,8 @@ const AddOrEditCategoryType = () => {
       ...p,
       name: detail?.name || '',
       ar_name: detail?.ar_name || '',
-      // normalize parent id whether backend sends object or id
+      totalStocks: detail?.totalStocks || 0,
+      totalPieceUsed: detail?.totalPieceUsed || 0,
       parent: detail?.parent?._id || detail?.parent?.id || detail?.parent || '',
     }));
   }, [isEdit, detail]);
@@ -79,6 +82,8 @@ const AddOrEditCategoryType = () => {
     fd.append('name', form.name.trim());
     fd.append('ar_name', form.ar_name.trim());
     fd.append('parent', form.parent || ''); // must be the category id
+    fd.append('totalStock', form.totalStocks || 0);
+    fd.append('totalPieceUsed', form.totalPieceUsed || 0);
 
     try {
       if (isEdit) {
@@ -107,8 +112,8 @@ const AddOrEditCategoryType = () => {
             <Card variant="outlined" sx={{ mb: 2, borderRadius: 3, opacity: disabled ? 0.7 : 1, backgroundColor: '#111' }}>
               <CardHeader title="Basics" sx={{ pb: 0 }} />
               <CardContent>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <div style={{ width: '50%' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div style={{ width: '100%' }}>
                     <TextField
                       label="Name *"
                       fullWidth
@@ -119,7 +124,7 @@ const AddOrEditCategoryType = () => {
                     />
                   </div>
                   
-                  <div style={{ width: '50%' }}>
+                  <div style={{ width: '100%' }}>
                     <TextField
                       label="Name (Arabic) *"
                       fullWidth
@@ -130,7 +135,29 @@ const AddOrEditCategoryType = () => {
                     />
                   </div>
 
-                  <div style={{ width: '50%' }}>
+                  <div style={{ width: '100%' }}>
+                    <TextField
+                      label="Total Stocks *"
+                      fullWidth
+                      required
+                      value={form.totalStocks}
+                      disabled={disabled}
+                      onChange={(e) => setField('totalStocks', e.target.value)}
+                    />
+                  </div>
+
+                  <div style={{ width: '100%' }}>
+                    <TextField
+                      label="Total Piece Used *"
+                      fullWidth
+                      required
+                      value={form.totalPieceUsed}
+                      disabled={disabled}
+                      onChange={(e) => setField('totalPieceUsed', e.target.value)}
+                    />
+                  </div>
+
+                  <div style={{ width: '100%' }}>
                     <Autocomplete
                       options={options}
                       loading={catsLoading}

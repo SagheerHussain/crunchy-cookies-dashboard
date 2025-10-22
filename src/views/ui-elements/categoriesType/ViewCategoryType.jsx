@@ -42,31 +42,16 @@ export default function ViewCategoryType() {
       { field: 'name', headerName: 'Name', flex: 1, width: 220 },
       { field: 'ar_name', headerName: 'Ar Name', flex: 1, width: 220 },
       { field: 'slug', headerName: 'Slug', flex: 1, width: 220 },
+      { field: 'totalStock', headerName: 'Total Stocks', flex: 1, width: 220 },
+      { field: 'totalPieceUsed', headerName: 'Total Piece Used', flex: 1, width: 220 },
+      { field: 'remainingStock', headerName: 'Remaining Stocks', flex: 1, width: 220 },
+      { field: 'stockStatus', headerName: 'Stock Status', flex: 1, width: 220 },
       {
         field: 'isActive',
         headerName: 'Active',
         flex: 1,
         minWidth: 250,
         renderCell: (params) => <Chip label={params.value ? 'Active' : 'Inactive'} color={params.value ? 'success' : 'error'} />
-      },
-      {
-        field: 'parent',
-        headerName: 'Parent',
-        flex: 1,
-        width: 220,
-      },
-      {
-        field: 'image',
-        headerName: 'Parent Image',
-        flex: 1,
-        width: 220,
-        renderCell: (params) => (
-          <img
-            src={params.row.image}
-            alt={params.row.name}
-            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-          />
-        ),
       },
       {
         field: 'actions',

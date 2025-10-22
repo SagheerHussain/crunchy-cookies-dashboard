@@ -56,7 +56,8 @@ const defaultForm = {
 
   brand: null,
   categories: [],
-  type: null,
+  type: [],
+  totalPieceCarry: 0,
   occasions: [],
   recipients: [],
   colors: [],
@@ -109,8 +110,6 @@ export default function AddOrEditProduct() {
   const { data: namesQ } = useProductNames();
   const namesOpts = toOptions(namesQ?.rows);
 
-  console.log("suggestedProducts", namesQ);
-
   const brandOpts = toOptions(brandsQ?.rows);
   const typeOpts = toOptions(typesQ?.rows);
   const subcategoryOpts = toOptions(subsQ?.rows);
@@ -143,7 +142,8 @@ export default function AddOrEditProduct() {
 
       brand: idOf(p.brand),
       categories: (p.categories || []).map(idOf),
-      type: idOf(p.type),
+      type: (p.type || []).map(idOf),
+      totalPieceCarry: p.totalPieceCarry ?? 0,
       occasions: (p.occasions || []).map(idOf),
       recipients: (p.recipients || []).map(idOf),
       colors: (p.colors || []).map(idOf),
@@ -229,6 +229,7 @@ export default function AddOrEditProduct() {
     fd.append('totalStocks', form.totalStocks === '' || form.totalStocks == null ? '' : String(form.totalStocks));
     fd.append('remainingStocks', form.remainingStocks === '' || form.remainingStocks == null ? '' : String(form.remainingStocks));
     fd.append('totalPieceSold', form.totalPieceSold === '' || form.totalPieceSold == null ? '0' : String(form.totalPieceSold));
+    fd.append('totalPieceCarry', form.totalPieceCarry === '' || form.totalPieceCarry == null ? '0' : String(form.totalPieceCarry));
     fd.append('stockStatus', form.stockStatus || 'in_stock');
     fd.append('condition', form.condition || 'new');
     fd.append('isActive', String(!!form.isActive));
@@ -482,13 +483,19 @@ export default function AddOrEditProduct() {
 
                   <Grid item style={{ width: '24%' }}>
                     <Autocomplete
-                      options={typeOpts}
-                      getOptionLabel={getLabel}
-                      value={optionById(typeOpts, form.type)}
+                      multiple options={typeOpts} getOptionLabel={getLabel}
+                      value={optionsByIds(typeOpts, form.type)}
                       isOptionEqualToValue={(o, v) => o._id === v._id}
                       loading={!typeOpts?.length}
-                      onChange={(_, v) => setField('type', v?._id || null)}
-                      renderInput={(p) => <TextField {...p} label="Categ. Type" disabled={saving} />}
+                      onChange={(_, v) => setField('type', v.map((x) => x._id))}
+                      renderInput={(p) => <TextField {...p} label="Type" disabled={saving} />}
+                    />
+                  </Grid>
+
+                  <Grid item style={{ width: '24%' }}>
+                    <TextField
+                      label="Total Piece Carry" fullWidth disabled={saving}
+                      value={form.totalPieceCarry} onChange={setNumber('totalPieceCarry')}
                     />
                   </Grid>
 
