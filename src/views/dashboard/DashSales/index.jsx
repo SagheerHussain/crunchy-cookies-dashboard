@@ -69,7 +69,7 @@ export default function DashSales() {
               <ProductCard
                 params={{
                   title: 'Net Profit',
-                  primaryText: `$ ${overviewCards?.netProfit?.toFixed(2)}`,
+                  primaryText: `$ ${overviewCards?.netProfit?.toFixed(2) || 0}`,
                   secondaryText: 'Total Amount',
                   icon: 'payments',
                   tone: 'neutral'
@@ -80,7 +80,7 @@ export default function DashSales() {
               <ProductCard
                 params={{
                   title: 'Orders Delivered',
-                  primaryText: `${overviewCards?.ordersDelivered}`,
+                  primaryText: `${overviewCards?.ordersDelivered || 0}`,
                   secondaryText: 'Amount Deposit',
                   icon: 'shopping_bag',
                   tone: 'success'
@@ -91,7 +91,7 @@ export default function DashSales() {
               <ProductCard
                 params={{
                   title: 'Total Products',
-                  primaryText: `${overviewCards?.totalProducts}`,
+                  primaryText: `${overviewCards?.totalProducts || 0}`,
                   secondaryText: 'Amount Spent',
                   icon: 'card_giftcard',
                   tone: 'danger'
@@ -102,7 +102,7 @@ export default function DashSales() {
               <ProductCard
                 params={{
                   title: 'Remaining Amount',
-                  primaryText: `$ ${overviewCards?.expectedAmount?.toFixed(2)}`,
+                  primaryText: `$ ${overviewCards?.expectedAmount?.toFixed(2) || 0}`,
                   secondaryText: 'Expected Amount',
                   icon: 'local_offer',
                   tone: 'warning'
