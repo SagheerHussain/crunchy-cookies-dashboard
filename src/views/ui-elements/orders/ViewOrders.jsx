@@ -111,10 +111,13 @@ export default function ViewOrders() {
     return <span style={{ ...badgeBase, ...style }}>{safe(value)}</span>;
   };
 
-  // --------- Row menus (status/payment) + row spinner ----------
+  // --------- Row menus (status/payment) + field-scoped spinner ----------
   const [statusMenu, setStatusMenu] = React.useState({ anchor: null, row: null });
   const [paymentMenu, setPaymentMenu] = React.useState({ anchor: null, row: null });
-  const [updatingRowId, setUpdatingRowId] = React.useState(null);
+
+  // NEW: track both row **and** field
+  const [updating, setUpdating] = React.useState({ id: null, field: null });
+  const isBusy = (rowId, field) => updating.id === rowId && updating.field === field;
 
   const openStatusMenu = (e, row) => setStatusMenu({ anchor: e.currentTarget, row });
   const closeStatusMenu = () => setStatusMenu({ anchor: null, row: null });
@@ -125,24 +128,24 @@ export default function ViewOrders() {
   const changeStatus = async (newStatus) => {
     if (!statusMenu.row) return;
     const id = statusMenu.row.id ?? statusMenu.row._id;
-    closeStatusMenu(); // ⬅️ pehle close
-    setUpdatingRowId(id);
+    closeStatusMenu();
+    setUpdating({ id, field: 'status' });
     try {
       await updateMutation.mutateAsync({ id, formData: { status: newStatus } });
     } finally {
-      setUpdatingRowId(null);
+      setUpdating({ id: null, field: null });
     }
   };
 
   const changePayment = async (newPayment) => {
     if (!paymentMenu.row) return;
     const id = paymentMenu.row.id ?? paymentMenu.row._id;
-    closePaymentMenu(); // ⬅️ pehle close
-    setUpdatingRowId(id);
+    closePaymentMenu();
+    setUpdating({ id, field: 'payment' });
     try {
       await updateMutation.mutateAsync({ id, formData: { payment: newPayment } });
     } finally {
-      setUpdatingRowId(null);
+      setUpdating({ id: null, field: null });
     }
   };
 
@@ -156,29 +159,25 @@ export default function ViewOrders() {
       width: 180,
       renderCell: (p) => {
         const rowId = p.row.id ?? p.row._id;
-        const busy = updatingRowId === rowId;
+        const busy = isBusy(rowId, 'status');
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'relative' }}>
             <StatusBadge value={p.row.status} />
             <Tooltip title={busy ? 'Updating…' : 'Change status'}>
-              {/* span needed to allow tooltip on disabled button */}
               <span>
-                {
-                  updateMutation?.isPending ? (
-                    <ClipLoader color="#fff" size={12} />
-                  ) : (
-                    <IconButton size="small" disabled={busy} onClick={(e) => openStatusMenu(e, p.row)} sx={{ opacity: busy ? 0.5 : 1 }}>
-                      <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
-                    </IconButton>
-                  )
-                }
+                {busy ? (
+                  <ClipLoader color='#fff' size={12} />
+                ) : (
+                  <IconButton
+                    size="small"
+                    onClick={(e) => openStatusMenu(e, p.row)}
+                    sx={{ opacity: busy ? 0.5 : 1 }}
+                  >
+                    <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
+                  </IconButton>
+                )}
               </span>
             </Tooltip>
-            {busy && (
-              <Box sx={{ position: 'absolute', right: -2 }}>
-                <ClipLoader size={12} />
-              </Box>
-            )}
           </Box>
         );
       }
@@ -201,12 +200,13 @@ export default function ViewOrders() {
       field: 'avgDiscount',
       headerName: 'Coupon Discount',
       width: 130,
-      renderCell: (p) => 
-      <span>
-        {p.row.couponType === "fixed" && "QAR "} 
-        {safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}
-        {p.row.couponType === "percentage" && "%"} 
-      </span>
+      renderCell: (p) => (
+        <span>
+          {p.row.couponType === 'fixed' && 'QAR '}
+          {safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}
+          {p.row.couponType === 'percentage' && '%'}
+        </span>
+      )
     },
     { field: 'amount', headerName: 'Grand Total', width: 150, renderCell: (p) => <span>{toCurrency(p.row.amount)}</span> },
 
@@ -216,35 +216,32 @@ export default function ViewOrders() {
       width: 180,
       renderCell: (p) => {
         const rowId = p.row.id ?? p.row._id;
-        const busy = updatingRowId === rowId;
+        const busy = isBusy(rowId, 'payment');
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'relative' }}>
             <PaymentBadge value={p.row.payment} />
             <Tooltip title={busy ? 'Updating…' : 'Change payment'}>
               <span>
-                {
-                  updateMutation?.isPending ? (
-                    <ClipLoader color="#fff" size={12} />
-                  ) : (
-                    <IconButton size="small" disabled={busy} onClick={(e) => openPaymentMenu(e, p.row)} sx={{ opacity: busy ? 0.5 : 1 }}>
-                      <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
-                    </IconButton>
-                  )
-                }
+                {busy ? (
+                  <ClipLoader color='#fff' size={12} />
+                ) : (
+                  <IconButton
+                    size="small"
+                    onClick={(e) => openPaymentMenu(e, p.row)}
+                    sx={{ opacity: busy ? 0.5 : 1 }}
+                  >
+                    <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
+                  </IconButton>
+                )}
               </span>
             </Tooltip>
-            {busy && (
-              <Box sx={{ position: 'absolute', right: -2 }}>
-                <ClipLoader color="#fff" size={12} />
-              </Box>
-            )}
           </Box>
         );
       }
     },
 
     { field: 'placedAt', headerName: 'Place Date', width: 170, renderCell: (p) => <span>{toDate(p.row.placedAt)}</span> },
-    { field: 'deliveredAt', headerName: 'Delivery Date', width: 170, renderCell: (p) => <span>{toDate(p.row.placedAt)}</span> },
+    { field: 'deliveredAt', headerName: 'Delivery Date', width: 170, renderCell: (p) => <span>{toDate(p.row.deliveredAt)}</span> },
 
     {
       field: 'actions',
@@ -270,7 +267,7 @@ export default function ViewOrders() {
   // Custom loading overlay
   const LoadingOverlay = () => (
     <Box style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <ClipLoader loading />
+      <ClipLoader color='#fff' loading />
     </Box>
   );
 
@@ -433,7 +430,8 @@ export default function ViewOrders() {
         rows={data?.rows || []}
         getRowId={(row) => row.id ?? row._id}
         columns={columns}
-        loading={isLoading || isFetching || updateMutation.isPending}
+        // IMPORTANT: remove updateMutation.isPending here to avoid global overlay
+        loading={isLoading || isFetching}
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
         pageSizeOptions={[12]}
         checkboxSelection
@@ -459,7 +457,7 @@ export default function ViewOrders() {
             {s}
           </MenuItem>
         ))}
-        {/* Want full set? swap above with: PAYMENT_STATUS.map(...) */}
+        {/* For the full set, use: PAYMENT_STATUS.map(...) */}
       </Menu>
     </Box>
   );
