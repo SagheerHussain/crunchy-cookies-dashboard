@@ -466,3 +466,29 @@ body,
   color: #fff !important;
   margin-left: -10px !important;
 }
+
+.MuiDataGrid-cell:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #1b1b1b;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #626262;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #7e7e7e;
+}

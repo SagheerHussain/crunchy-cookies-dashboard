@@ -166,13 +166,9 @@ export default function ViewOrders() {
             <Tooltip title={busy ? 'Updating…' : 'Change status'}>
               <span>
                 {busy ? (
-                  <ClipLoader color='#fff' size={12} />
+                  <ClipLoader color="#fff" size={12} />
                 ) : (
-                  <IconButton
-                    size="small"
-                    onClick={(e) => openStatusMenu(e, p.row)}
-                    sx={{ opacity: busy ? 0.5 : 1 }}
-                  >
+                  <IconButton size="small" onClick={(e) => openStatusMenu(e, p.row)} sx={{ opacity: busy ? 0.5 : 1 }}>
                     <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
                   </IconButton>
                 )}
@@ -223,13 +219,9 @@ export default function ViewOrders() {
             <Tooltip title={busy ? 'Updating…' : 'Change payment'}>
               <span>
                 {busy ? (
-                  <ClipLoader color='#fff' size={12} />
+                  <ClipLoader color="#fff" size={12} />
                 ) : (
-                  <IconButton
-                    size="small"
-                    onClick={(e) => openPaymentMenu(e, p.row)}
-                    sx={{ opacity: busy ? 0.5 : 1 }}
-                  >
+                  <IconButton size="small" onClick={(e) => openPaymentMenu(e, p.row)} sx={{ opacity: busy ? 0.5 : 1 }}>
                     <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
                   </IconButton>
                 )}
@@ -267,7 +259,7 @@ export default function ViewOrders() {
   // Custom loading overlay
   const LoadingOverlay = () => (
     <Box style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <ClipLoader color='#fff' loading />
+      <ClipLoader color="#fff" loading />
     </Box>
   );
 
@@ -438,6 +430,17 @@ export default function ViewOrders() {
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
+        onRowClick={(params) => {
+          // params.id === result of getRowId -> row._id
+          navigate(`/order-detail/${params.id}`);
+        }}
+        sx={{
+          border: 'none',
+          '& .MuiDataGrid-row': { cursor: 'pointer' },
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: 'rgba(0,0,0,0.02)'
+          }
+        }}
         slots={{ loadingOverlay: LoadingOverlay }}
       />
 

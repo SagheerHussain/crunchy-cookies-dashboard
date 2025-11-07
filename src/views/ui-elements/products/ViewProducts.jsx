@@ -397,6 +397,7 @@ export default function ProductsTable() {
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
+        
         slots={{ loadingOverlay: LoadingOverlay }}
       />
 
