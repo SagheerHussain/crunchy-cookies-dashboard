@@ -388,7 +388,7 @@ export default function ProductsTable() {
 
       {/* DataGrid */}
       <DataGrid
-        rows={products?.rows || []}
+        rows={products?.rows?.reverse() || []}
         columns={columns}
         loading={isLoading || isFetching}
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}

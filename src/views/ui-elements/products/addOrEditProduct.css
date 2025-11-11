@@ -1,0 +1,308 @@
+/* ROOT / PAGE WRAPPER */
+
+.pf-root {
+  padding: 0;
+}
+
+.pf-container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.pf-header {
+  margin-bottom: 1.25rem;
+}
+
+.pf-title {
+  color: #e5e5e5;
+}
+
+.pf-loading {
+  margin-bottom: 1rem;
+}
+
+.pf-error {
+  margin-bottom: 1rem;
+}
+
+/* ================== MAIN GRID ================== */
+
+.pf-main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+/* xl: left 2fr, right 1fr */
+@media (min-width: 1280px) {
+  .pf-main-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.pf-left-col,
+.pf-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* RIGHT COLUMN as clean sidebar */
+@media (min-width: 1280px) {
+  .pf-right-col {
+    max-width: 420px;   /* controlled width */
+    margin-left: auto;  /* snug to right edge */
+  }
+}
+
+/* ================== SECTION CARD ================== */
+
+.pf-section {
+  background-color: #111111;
+  border-radius: 18px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.pf-section-title {
+  color: #f5f5f5;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* generic grid helper */
+.pf-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+/* ================== BASICS GRID ================== */
+/* 1 col mobile, 2 col md, 4 col xl */
+
+.pf-grid-basics {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .pf-grid-basics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .pf-grid-basics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ================== DESCRIPTIONS ================== */
+
+.pf-desc-block {
+  margin-top: 1rem;
+}
+
+.pf-label {
+  color: #d4d4d4;
+  margin-bottom: 0.25rem;
+}
+
+.pf-quill .ql-container {
+  min-height: 100px;
+  background-color: #111111;
+}
+
+/* ================== MEDIA ================== */
+
+.pf-grid-media {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .pf-grid-media {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pf-media-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pf-featured-preview {
+  margin-top: 0.25rem;
+  max-width: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pf-featured-preview img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-thumbs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.pf-thumb {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pf-thumb img {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-thumb-delete {
+  position: absolute !important;
+  top: 3px;
+  right: 3px;
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* ================== CLASSIFICATION GRID ================== */
+/* 1 -> 2 -> 3 -> 4 cols */
+
+.pf-grid-classification {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .pf-grid-classification {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .pf-grid-classification {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .pf-grid-classification {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ================== PRICING & INVENTORY ================== */
+
+.pf-section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/*
+  Right column requirement:
+  - Mobile: 1 input per row
+  - >=768px: 2 inputs per row
+*/
+.pf-grid-pricing {
+  display: grid;
+  grid-template-columns: 1fr;       /* mobile: single column */
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+  .pf-grid-pricing {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* tablet/desktop: 2 columns */
+  }
+}
+
+/* Final price row: stretch full width so it doesn't look cramped */
+.pf-final-price {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #e5e5e5;
+}
+
+@media (min-width: 768px) {
+  .pf-final-price {
+    grid-column: 1 / -1; /* own row across both columns */
+  }
+}
+
+/* stock fill row always full width at bottom */
+.pf-stock-fill {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0.1rem;
+}
+
+.pf-stock-fill-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #a1a1aa;
+}
+
+.pf-stock-progress {
+  border-radius: 4px;
+}
+
+/* sidebar sticky on xl+ so it lines with Basics */
+@media (min-width: 1280px) {
+  .pf-sticky {
+    position: sticky;
+    top: 80px;
+  }
+}
+
+/* ================== VISIBILITY & DIMENSIONS ================== */
+
+.pf-switch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Dimensions: mobile 1 col, >=768px 2 cols */
+.pf-grid-dimensions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .pf-grid-dimensions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ================== MISC ================== */
+
+.pf-divider {
+  margin: 0.75rem 0;
+  border-color: #27272a !important;
+}
+
+.pf-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pf-actions button {
+  margin-top: 1rem;
+}
+
+/* remove extra top gaps between stacked sections */
+.pf-section + .pf-section {
+  margin-top: 0;
+}

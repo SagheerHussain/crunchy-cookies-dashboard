@@ -192,18 +192,18 @@ export default function ViewOrders() {
     },
 
     { field: 'tax', headerName: 'Delivery Charges', width: 130, renderCell: (p) => <span>{toCurrency(p.row.tax)}</span> },
-    {
-      field: 'avgDiscount',
-      headerName: 'Coupon Discount',
-      width: 130,
-      renderCell: (p) => (
-        <span>
-          {p.row.couponType === 'fixed' && 'QAR '}
-          {safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}
-          {p.row.couponType === 'percentage' && '%'}
-        </span>
-      )
-    },
+    // {
+    //   field: 'avgDiscount',
+    //   headerName: 'Coupon Discount',
+    //   width: 130,
+    //   renderCell: (p) => (
+    //     <span>
+    //       {p.row.couponType === 'fixed' && 'QAR '}
+    //       {safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}
+    //       {p.row.couponType === 'percentage' && '%'}
+    //     </span>
+    //   )
+    // },
     { field: 'amount', headerName: 'Grand Total', width: 150, renderCell: (p) => <span>{toCurrency(p.row.amount)}</span> },
 
     {
@@ -430,10 +430,10 @@ export default function ViewOrders() {
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
-        onRowClick={(params) => {
-          // params.id === result of getRowId -> row._id
-          navigate(`/order-detail/${params.id}`);
-        }}
+        // onRowClick={(params) => {
+        //   // params.id === result of getRowId -> row._id
+        //   navigate(`/order-detail/${params.id}`);
+        // }}
         sx={{
           border: 'none',
           '& .MuiDataGrid-row': { cursor: 'pointer' },
