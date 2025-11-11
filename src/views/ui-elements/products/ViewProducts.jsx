@@ -202,7 +202,7 @@ export default function ProductsTable() {
 
   const LoadingOverlay = () => (
     <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <ClipLoader loading />
+      <ClipLoader color="#fff" loading />
     </Box>
   );
 
