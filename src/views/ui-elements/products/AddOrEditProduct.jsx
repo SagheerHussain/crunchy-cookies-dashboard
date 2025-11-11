@@ -39,8 +39,6 @@ import { useRecipients } from '../../../hooks/recipients/useRecipients';
 import { useColors } from '../../../hooks/colors/useColors';
 import { usePackaging } from '../../../hooks/packaging/usePackaging';
 
-import './AddOrEditProduct.css'; // <- important
-
 /* ================== Enums ================== */
 const AVAILABILITY = ['in_stock', 'low_stock', 'out_of_stock'];
 const CURRENCIES = ['QAR', 'USD'];
