@@ -1,3 +1,4 @@
+// src/pages/.../ViewOccasion.jsx
 import * as React from "react";
 import {
   Box,
@@ -15,9 +16,40 @@ import Button from "../../../components/Button";
 import { IoBag } from "react-icons/io5";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { useOccasions } from "../../../hooks/occasions/useOccasions";
 import { useDeleteOccasion } from "../../../hooks/occasions/useOccasionsMutation";
+
+/* ---------- pretty pill helper + chip ---------- */
+const pill = (bg, fg, border) => ({
+  bgcolor: bg,
+  color: fg,
+  border: `1px solid ${border}`,
+  fontWeight: 700,
+  height: 26,
+  borderRadius: 999,
+  "& .MuiChip-icon": { fontSize: 16, mr: 0.5, color: fg },
+  "& .MuiChip-label": { px: 0.75, fontSize: 12, letterSpacing: 0.2 },
+});
+
+const ActiveChip = ({ value }) =>
+  value ? (
+    <Chip
+      size="small"
+      icon={<CheckCircleIcon />}
+      label="Active"
+      sx={pill("rgba(16,185,129,0.18)", "#86efac", "rgba(16,185,129,0.45)")}
+    />
+  ) : (
+    <Chip
+      size="small"
+      icon={<CancelIcon />}
+      label="Inactive"
+      sx={pill("rgba(239,68,68,0.18)", "#fca5a5", "rgba(239,68,68,0.45)")}
+    />
+  );
 
 export default function ViewOccasion() {
   const navigate = useNavigate();
@@ -28,7 +60,7 @@ export default function ViewOccasion() {
     name: "",
   });
 
-  const { data, isLoading, isError } = useOccasions();
+  const { data, isLoading } = useOccasions();
   const { mutateAsync: deleteOccasion, isPending: deleteOccasionPending } = useDeleteOccasion();
 
   const openConfirm = (row) =>
@@ -39,7 +71,6 @@ export default function ViewOccasion() {
     if (!confirm.id) return;
     try {
       await deleteOccasion(confirm.id);
-      // no manual refetch needed (optimistic + invalidate handles it)
     } finally {
       closeConfirm();
     }
@@ -67,18 +98,17 @@ export default function ViewOccasion() {
     { field: "name", headerName: "Name", width: 250 },
     { field: "ar_name", headerName: "Name (Arabic)", width: 250 },
     { field: "slug", headerName: "Slug", width: 250 },
+
+    // ---- Active/Inactive badge ----
     {
       field: "isActive",
       headerName: "Active",
       flex: 1,
-      minWidth: 250,
-      renderCell: (params) => (
-        <Chip
-          label={params.value ? "Active" : "Inactive"}
-          color={params.value ? "success" : "error"}
-        />
-      ),
+      minWidth: 220,
+      sortable: true,
+      renderCell: (params) => <ActiveChip value={params.value} />,
     },
+
     {
       field: "actions",
       headerName: "Actions",
@@ -157,7 +187,7 @@ export default function ViewOccasion() {
 
       <DataGrid
         rows={data?.rows || []}
-        getRowId={(row) => row.id ?? row._id}  // <- handles id/_id
+        getRowId={(row) => row.id ?? row._id}
         columns={columns}
         loading={isLoading}
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}

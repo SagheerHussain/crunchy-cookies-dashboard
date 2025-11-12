@@ -1,14 +1,56 @@
 // src/pages/.../CategoriesTable.jsx
 import * as React from 'react';
-import { Box, Alert, Chip, Tooltip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button as MuiButton } from '@mui/material';
+import {
+  Box,
+  Alert,
+  Chip,
+  Tooltip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button as MuiButton
+} from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '../../../components/Button';
 import { IoBag } from 'react-icons/io5';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from 'react-router-dom';
 import { useSubCategories } from '../../../hooks/subCategories/useSubCategories';
 import { useDeleteSubCategory } from '../../../hooks/subCategories/useSubCategoryMutation';
+
+/* ---------- pretty pill helper + chip ---------- */
+const pill = (bg, fg, border) => ({
+  bgcolor: bg,
+  color: fg,
+  border: `1px solid ${border}`,
+  fontWeight: 700,
+  height: 26,
+  borderRadius: 999,
+  '& .MuiChip-icon': { fontSize: 16, mr: 0.5, color: fg },
+  '& .MuiChip-label': { px: 0.75, fontSize: 12, letterSpacing: 0.2 }
+});
+
+const ActiveChip = ({ value }) =>
+  value ? (
+    <Chip
+      size="small"
+      icon={<CheckCircleIcon />}
+      label="Active"
+      sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')}
+    />
+  ) : (
+    <Chip
+      size="small"
+      icon={<CancelIcon />}
+      label="Inactive"
+      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
+    />
+  );
 
 export default function ViewSubCategories() {
   const navigate = useNavigate();
@@ -25,7 +67,6 @@ export default function ViewSubCategories() {
   });
 
   const openConfirm = (row) => setConfirm({ open: true, id: row.id, name: row.name });
-
   const closeConfirm = () => setConfirm({ open: false, id: null, name: '' });
 
   const handleConfirmDelete = async () => {
@@ -60,13 +101,17 @@ export default function ViewSubCategories() {
       { field: 'name', headerName: 'Name', flex: 1, width: 220 },
       { field: 'ar_name', headerName: 'Ar Name', flex: 1, width: 220 },
       { field: 'slug', headerName: 'Slug', flex: 1, width: 220 },
+
+      // --------- Active/Inactive pretty badge ----------
       {
         field: 'isActive',
         headerName: 'Active',
         flex: 1,
-        minWidth: 250,
-        renderCell: (params) => <Chip label={params.value ? 'Active' : 'Inactive'} color={params.value ? 'success' : 'error'} />
+        minWidth: 220,
+        sortable: true,
+        renderCell: (params) => <ActiveChip value={params.value} />
       },
+
       {
         field: 'actions',
         headerName: 'Actions',

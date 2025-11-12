@@ -18,19 +18,68 @@ import {
 } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import PersonIcon from "@mui/icons-material/Person";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { useUsers } from "../../../hooks/users/useUsers";
 
 /* ---------- Small helpers ---------- */
 const formatDOB = (v) => (typeof v === "string" ? v.split("T")[0] : v ?? "-");
-const statusChip = (row) => {
-  const active = (row.isActive ?? row.status) === "active";
-  return (
+
+/** pill style generator for pretty chips */
+const pill = (bg, fg, border = "transparent") => ({
+  bgcolor: bg,
+  color: fg,
+  fontWeight: 700,
+  borderRadius: "9999px",
+  height: 26,
+  px: 1.25,
+  border: `1px solid ${border}`,
+  "& .MuiChip-icon": { fontSize: 16, mr: 0.5, color: fg },
+  "& .MuiChip-label": { px: 0.5, fontSize: 12, letterSpacing: 0.2 },
+});
+
+/** Role: only Admin | Customer are allowed */
+const roleChip = (value) => {
+  const v = String(value || "").toLowerCase();
+  const isAdmin = v === "admin";
+  return isAdmin ? (
     <Chip
       size="small"
-      label={active ? "Active" : "Blocked"}
-      color={active ? "success" : "error"}
-      variant={active ? "filled" : "outlined"}
+      icon={<AdminPanelSettingsIcon />}
+      label="Admin"
+      sx={pill("rgba(59,130,246,0.15)", "#93c5fd", "rgba(59,130,246,0.35)")}
+    />
+  ) : (
+    <Chip
+      size="small"
+      icon={<PersonIcon />}
+      label="Customer"
+      sx={pill("rgba(245,158,11,0.14)", "#fbbf24", "rgba(245,158,11,0.35)")}
+    />
+  );
+};
+
+/** Status: Active | Inactive (supports isActive boolean or status string) */
+const statusChip = (row) => {
+  const raw = row?.status ?? (row?.isActive ? "active" : "inactive");
+  const isActive =
+    String(raw).toLowerCase() === "active" || row?.isActive === true;
+  return isActive ? (
+    <Chip
+      size="small"
+      icon={<CheckCircleIcon />}
+      label="Active"
+      sx={pill("rgba(16,185,129,0.18)", "#86efac", "rgba(16,185,129,0.45)")}
+    />
+  ) : (
+    <Chip
+      size="small"
+      icon={<CancelIcon />}
+      label="Inactive"
+      sx={pill("rgba(239,68,68,0.14)", "#fca5a5", "rgba(239,68,68,0.45)")}
     />
   );
 };
@@ -46,7 +95,8 @@ function EmailCell({ value }) {
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          color: "#e5e7eb",
+          color: "#fff",
+          marginTop: 3,
         }}
       >
         {value}
@@ -60,7 +110,7 @@ function PhoneCell({ value }) {
   return (
     <MuiButton
       size="small"
-      sx={{ textTransform: "none", px: 0 }}
+      sx={{ textTransform: "none", px: 0, color: "#fff" }}
       href={`tel:${value}`}
     >
       {value}
@@ -138,6 +188,7 @@ export default function ViewCustomers() {
       { field: "lastName", headerName: "Last Name", width: 150 },
       { field: "ar_firstName", headerName: "First Name (ar)", width: 160 },
       { field: "ar_lastName", headerName: "Last Name (ar)", width: 160 },
+
       {
         field: "email",
         headerName: "Email",
@@ -150,19 +201,17 @@ export default function ViewCustomers() {
         width: 160,
         renderCell: (params) => <PhoneCell value={params.value} />,
       },
+
       {
         field: "role",
         headerName: "Role",
-        width: 140,
-        renderCell: (p) => (
-          <Chip
-            size="small"
-            label={String(p.value ?? "-")}
-            sx={{ bgcolor: "rgba(79,70,229,0.12)", color: "#93c5fd" }}
-          />
-        ),
+        width: 160,
+        sortable: false,
+        renderCell: (p) => roleChip(p.value), // Admin / Customer badge
       },
+
       { field: "gender", headerName: "Gender", width: 120 },
+
       {
         field: "dob",
         headerName: "DOB",
@@ -171,14 +220,16 @@ export default function ViewCustomers() {
         renderCell: (p) => formatDOB(p.value),
         sortComparator: (a, b) => String(a ?? "").localeCompare(String(b ?? "")),
       },
+
       {
         field: "status",
         headerName: "Status",
-        width: 130,
+        width: 150,
         sortable: false,
         filterable: false,
-        renderCell: (p) => statusChip(p.row),
+        renderCell: (p) => statusChip(p.row), // Active / Inactive badge
       },
+
       {
         field: "actions",
         headerName: "Actions",
@@ -216,10 +267,7 @@ export default function ViewCustomers() {
           alignItems: "center",
         }}
       >
-        <Typography
-          component="h4"
-          sx={{ color: "#fff", fontSize: 24, fontWeight: 600 }}
-        >
+        <Typography component="h4" sx={{ color: "#fff", fontSize: 24, fontWeight: 600 }}>
           Users
         </Typography>
       </Box>
@@ -250,7 +298,6 @@ export default function ViewCustomers() {
         slotProps={{
           toolbar: {
             onRefresh: () => {
-              // prefer refetch if your hook supports it; fallback to key bump
               if (typeof refetch === "function") refetch();
               else setRefreshKey((k) => k + 1);
             },
@@ -259,9 +306,6 @@ export default function ViewCustomers() {
         // Styling & UX
         sx={{
           border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(17, 24, 39, 0.5)",
-          "--DataGrid-containerBackground": "transparent",
-          "--DataGrid-rowBorderColor": "rgba(255,255,255,0.06)",
           color: "#e5e7eb",
           "& .MuiDataGrid-columnHeaders": {
             backgroundColor: "rgba(255,255,255,0.03)",
@@ -281,17 +325,17 @@ export default function ViewCustomers() {
           },
           "& .MuiDataGrid-virtualScroller": { overflowX: "hidden" },
         }}
-        getRowClassName={(params) =>
-          ((params.row.isActive ?? params.row.status) === "active"
-            ? ""
-            : "blocked") 
-        }
+        /** tint row if inactive */
+        getRowClassName={(params) => {
+          const raw = params.row?.status ?? (params.row?.isActive ? "active" : "inactive");
+          const isActive =
+            String(raw).toLowerCase() === "active" || params.row?.isActive === true;
+          return isActive ? "" : "blocked";
+        }}
       />
 
       {/* Error state under grid, if any */}
-      {isError && (
-        <ErrorOverlay error={error?.message || "Unknown error"} />
-      )}
+      {isError && <ErrorOverlay error={error?.message || "Unknown error"} />}
     </Box>
   );
 }

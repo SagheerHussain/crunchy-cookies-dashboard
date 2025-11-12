@@ -23,6 +23,9 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../../hooks/products/useProducts';
 import { useDeleteProduct } from '../../../hooks/products/useProductMutation';
@@ -56,6 +59,51 @@ const prevYearRange = () => {
   const y = new Date().getFullYear() - 1;
   return { from: ymd(new Date(y, 0, 1)), to: ymd(new Date(y, 11, 31)) };
 };
+
+/* ===== Better stock badge ===== */
+const pill = (bg, fg, border) => ({
+  bgcolor: bg,
+  color: fg,
+  border: `1px solid ${border}`,
+  fontWeight: 700,
+  height: 26,
+  borderRadius: 999,
+  '& .MuiChip-icon': { fontSize: 16, mr: 0.5, color: fg },
+  '& .MuiChip-label': { px: 0.75, fontSize: 12, letterSpacing: 0.2 }
+});
+
+function stockChip(value) {
+  const v = String(value || '').toLowerCase(); // in_stock | low_stock | out_of_stock
+  if (v === 'in_stock') {
+    return (
+      <Chip
+        size="small"
+        icon={<CheckCircleIcon />}
+        label="In stock"
+        sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')}
+      />
+    );
+  }
+  if (v === 'low_stock') {
+    return (
+      <Chip
+        size="small"
+        icon={<ReportProblemIcon />}
+        label="Low stock"
+        sx={pill('rgba(245,158,11,0.18)', '#fbbf24', 'rgba(245,158,11,0.45)')}
+      />
+    );
+  }
+  // out_of_stock (default)
+  return (
+    <Chip
+      size="small"
+      icon={<CancelIcon />}
+      label="Out of stock"
+      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
+    />
+  );
+}
 
 export default function ProductsTable() {
   const htmlToText = (html) => {
@@ -139,25 +187,16 @@ export default function ProductsTable() {
     { field: 'sku', headerName: 'SKU', width: 140 },
     { field: 'price', headerName: 'Price', type: 'number', width: 120, valueFormatter: (p) => `QAR ${Number(p).toFixed(2)}` },
     { field: 'remainingStocks', headerName: 'Remaining', type: 'number', width: 120 },
+
+    // >>> NEW nicer stock badge
     {
       field: 'stockStatus',
       headerName: 'Status',
-      width: 130,
-      renderCell: (p) => {
-        const v = p.value;
-        const tone = v === 'in_stock' ? 'success' : v === 'low_stock' ? 'warning' : 'danger';
-        const t = SOFT[tone];
-        const label = v === 'in_stock' ? 'In stock' : v === 'low_stock' ? 'Low' : 'Out';
-        return (
-          <Chip
-            size="small"
-            label={label}
-            variant="outlined"
-            sx={{ color: t.color, bgcolor: t.bg, borderColor: t.border, fontWeight: 600 }}
-          />
-        );
-      }
+      width: 150,
+      sortable: true,
+      renderCell: (p) => stockChip(p.value)
     },
+
     {
       field: 'createdAt',
       headerName: 'Created',
@@ -207,7 +246,6 @@ export default function ProductsTable() {
   );
 
   return (
-    // position relative so the FAB can be positioned absolutely inside this page area
     <Box sx={{ width: '100%', position: 'relative', pb: 8 }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -245,27 +283,14 @@ export default function ProductsTable() {
         </div>
 
         <div>
-          {/* FLOATING FILTER BUTTON (bottom-right) */}
+          {/* Filter button */}
           <Tooltip title="Filter by Date">
-            <IconButton
-              onClick={openFilter}
-              sx={{
-                position: 'static', // stick to viewport bottom-right
-                // right: { xs: 16, md: 28 },
-                // bottom:{ xs: 16, md: 28 },
-                zIndex: 1300
-                // bgcolor:'rgba(31,41,55,0.9)',
-                // border:'1px solid rgba(255,255,255,0.18)',
-                // boxShadow:'0 6px 24px rgba(0,0,0,0.35)',
-                // '&:hover': { bgcolor:'rgba(51,65,85,0.95)' }
-              }}
-              size="large"
-            >
+            <IconButton onClick={openFilter} sx={{ position: 'static', zIndex: 1300 }} size="large">
               <FilterListIcon sx={{ color: '#e5e7eb' }} />
             </IconButton>
           </Tooltip>
 
-          {/* Date Filter Popover (anchors to floating button) */}
+          {/* Date Filter Popover */}
           <Popover
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
@@ -397,7 +422,6 @@ export default function ProductsTable() {
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
-        
         slots={{ loadingOverlay: LoadingOverlay }}
       />
 

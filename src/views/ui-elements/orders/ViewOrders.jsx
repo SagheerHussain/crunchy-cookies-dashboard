@@ -5,19 +5,94 @@ import { DataGrid } from '@mui/x-data-grid';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import UTurnLeftIcon from '@mui/icons-material/UTurnLeft';
+import ErrorIcon from '@mui/icons-material/Error';
+import ReplayIcon from '@mui/icons-material/Replay';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import DonutLargeIcon from '@mui/icons-material/DonutLarge';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../../hooks/orders/useOrders';
 import { useUpdateOrder } from '../../../hooks/orders/useOrderMutation';
 import { ClipLoader } from 'react-spinners';
 
+const ORDER_STATUS = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned'];
 const PAYMENT_STATUS = ['pending', 'paid', 'failed', 'refunded', 'partial'];
 
+/* =========================
+   Pretty pill badge helpers
+   ========================= */
+const pill = (bg, fg, border) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '2px 10px',
+  borderRadius: 999,
+  fontWeight: 700,
+  fontSize: 12,
+  lineHeight: 1.6,
+  background: bg,
+  color: fg,
+  border: `1px solid ${border}`,
+  textTransform: 'capitalize',
+});
+
+const STATUS_STYLE = {
+  pending:   { bg: 'rgba(245,158,11,0.16)', fg: '#fbbf24', br: 'rgba(245,158,11,0.35)', Icon: ScheduleIcon },
+  confirmed: { bg: 'rgba(59,130,246,0.16)', fg: '#93c5fd', br: 'rgba(59,130,246,0.35)', Icon: TaskAltIcon },
+  shipped:   { bg: 'rgba(99,102,241,0.16)', fg: '#a5b4fc', br: 'rgba(99,102,241,0.35)', Icon: LocalShippingIcon },
+  delivered: { bg: 'rgba(16,185,129,0.16)', fg: '#86efac', br: 'rgba(16,185,129,0.45)', Icon: CheckCircleIcon },
+  cancelled: { bg: 'rgba(239,68,68,0.16)', fg: '#fca5a5', br: 'rgba(239,68,68,0.42)', Icon: CancelIcon },
+  returned:  { bg: 'rgba(244,114,182,0.16)', fg: '#f9a8d4', br: 'rgba(244,114,182,0.42)', Icon: UTurnLeftIcon },
+  default:   { bg: 'rgba(148,163,184,0.16)', fg: '#cbd5e1', br: 'rgba(148,163,184,0.35)', Icon: ScheduleIcon },
+};
+
+const PAYMENT_STYLE = {
+  pending:  { bg: 'rgba(245,158,11,0.16)', fg: '#fbbf24', br: 'rgba(245,158,11,0.35)', Icon: ScheduleIcon },
+  paid:     { bg: 'rgba(16,185,129,0.16)', fg: '#86efac', br: 'rgba(16,185,129,0.45)', Icon: PaymentsIcon },
+  failed:   { bg: 'rgba(239,68,68,0.16)', fg: '#fca5a5', br: 'rgba(239,68,68,0.42)', Icon: ErrorIcon },
+  refunded: { bg: 'rgba(56,189,248,0.16)', fg: '#7dd3fc', br: 'rgba(56,189,248,0.42)', Icon: ReplayIcon },
+  partial:  { bg: 'rgba(99,102,241,0.16)', fg: '#a5b4fc', br: 'rgba(99,102,241,0.35)', Icon: DonutLargeIcon },
+  default:  { bg: 'rgba(148,163,184,0.16)', fg: '#cbd5e1', br: 'rgba(148,163,184,0.35)', Icon: ScheduleIcon },
+};
+
+function StatusBadge({ value }) {
+  const k = String(value || '').toLowerCase();
+  const { bg, fg, br, Icon } = STATUS_STYLE[k] || STATUS_STYLE.default;
+  const label = ORDER_STATUS.includes(k) ? k : 'pending';
+  return (
+    <span style={pill(bg, fg, br)}>
+      <Icon sx={{ fontSize: 16, color: fg }} />
+      {label}
+    </span>
+  );
+}
+
+function PaymentBadge({ value }) {
+  const k = String(value || '').toLowerCase();
+  const { bg, fg, br, Icon } = PAYMENT_STYLE[k] || PAYMENT_STYLE.default;
+  const label = PAYMENT_STATUS.includes(k) ? k : 'pending';
+  return (
+    <span style={pill(bg, fg, br)}>
+      <Icon sx={{ fontSize: 16, color: fg }} />
+      {label}
+    </span>
+  );
+}
+
+/* =========================
+          Component
+   ========================= */
 export default function ViewOrders() {
   const navigate = useNavigate();
   const updateMutation = useUpdateOrder();
 
   // ---------- Tabs (with All) ----------
-  const TABS = ['all', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned'];
+  const TABS = ['all', ...ORDER_STATUS];
   const [status, setStatus] = React.useState('all');
 
   // ---------- Date filter state ----------
@@ -72,50 +147,10 @@ export default function ViewOrders() {
     return dt && !isNaN(dt) ? dt.toLocaleDateString() : '__';
   };
 
-  const badgeBase = {
-    display: 'inline-block',
-    padding: '2px 8px',
-    borderRadius: 999,
-    fontWeight: 600,
-    fontSize: 12,
-    lineHeight: 1.4,
-    border: '1px solid rgba(255,255,255,0.18)',
-    textTransform: 'capitalize'
-  };
-  const statusStyles = {
-    confirmed: { background: 'rgba(34,197,94,0.18)', color: '#34ff82', border: '1px solid rgba(34,197,94,0.28)' },
-    pending: { background: 'rgba(245,158,11,0.18)', color: '#fc9801', border: '1px solid rgba(245,158,11,0.28)' },
-    cancelled: { background: 'rgba(239,68,68,0.18)', color: '#fb2626', border: '1px solid rgba(239,68,68,0.28)' },
-    shipped: { background: 'rgba(59,130,246,0.18)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.28)' },
-    delivered: { background: 'rgba(16,185,129,0.18)', color: '#34d399', border: '1px solid rgba(16,185,129,0.28)' },
-    returned: { background: 'rgba(244,114,182,0.18)', color: '#f9a8d4', border: '1px solid rgba(244,114,182,0.28)' },
-    default: { background: 'rgba(148,163,184,0.18)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.28)' }
-  };
-  const paymentStyles = {
-    paid: { background: 'rgba(34,197,94,0.18)', color: '#34ff82', border: '1px solid rgba(34,197,94,0.28)' },
-    pending: { background: 'rgba(245,158,11,0.18)', color: '#fc9801', border: '1px solid rgba(245,158,11,0.28)' },
-    failed: { background: 'rgba(239,68,68,0.18)', color: '#fb2626', border: '1px solid rgba(239,68,68,0.28)' },
-    refunded: { background: 'rgba(99,102,241,0.18)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.28)' },
-    partial: { background: 'rgba(56,189,248,0.18)', color: '#7dd3fc', border: '1px solid rgba(56,189,248,0.28)' },
-    default: { background: 'rgba(148,163,184,0.18)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.28)' }
-  };
-
-  const StatusBadge = ({ value }) => {
-    const k = String(value || '').toLowerCase();
-    const style = statusStyles[k] || statusStyles.default;
-    return <span style={{ ...badgeBase, ...style }}>{safe(value)}</span>;
-  };
-  const PaymentBadge = ({ value }) => {
-    const k = String(value || '').toLowerCase();
-    const style = paymentStyles[k] || paymentStyles.default;
-    return <span style={{ ...badgeBase, ...style }}>{safe(value)}</span>;
-  };
-
   // --------- Row menus (status/payment) + field-scoped spinner ----------
   const [statusMenu, setStatusMenu] = React.useState({ anchor: null, row: null });
   const [paymentMenu, setPaymentMenu] = React.useState({ anchor: null, row: null });
 
-  // NEW: track both row **and** field
   const [updating, setUpdating] = React.useState({ id: null, field: null });
   const isBusy = (rowId, field) => updating.id === rowId && updating.field === field;
 
@@ -156,19 +191,19 @@ export default function ViewOrders() {
     {
       field: 'status',
       headerName: 'Status',
-      width: 180,
+      width: 200,
       renderCell: (p) => {
         const rowId = p.row.id ?? p.row._id;
         const busy = isBusy(rowId, 'status');
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'relative' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <StatusBadge value={p.row.status} />
             <Tooltip title={busy ? 'Updating…' : 'Change status'}>
               <span>
                 {busy ? (
                   <ClipLoader color="#fff" size={12} />
                 ) : (
-                  <IconButton size="small" onClick={(e) => openStatusMenu(e, p.row)} sx={{ opacity: busy ? 0.5 : 1 }}>
+                  <IconButton size="small" onClick={(e) => openStatusMenu(e, p.row)}>
                     <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
                   </IconButton>
                 )}
@@ -191,37 +226,25 @@ export default function ViewOrders() {
       }
     },
 
-    { field: 'tax', headerName: 'Delivery Charges', width: 130, renderCell: (p) => <span>{toCurrency(p.row.tax)}</span> },
-    // {
-    //   field: 'avgDiscount',
-    //   headerName: 'Coupon Discount',
-    //   width: 130,
-    //   renderCell: (p) => (
-    //     <span>
-    //       {p.row.couponType === 'fixed' && 'QAR '}
-    //       {safe(Number.isFinite(Number(p.row.avgDiscount)) ? Number(p.row.avgDiscount) : undefined)}
-    //       {p.row.couponType === 'percentage' && '%'}
-    //     </span>
-    //   )
-    // },
+    { field: 'tax', headerName: 'Delivery Charges', width: 150, renderCell: (p) => <span>{toCurrency(p.row.tax)}</span> },
     { field: 'amount', headerName: 'Grand Total', width: 150, renderCell: (p) => <span>{toCurrency(p.row.amount)}</span> },
 
     {
       field: 'payment',
       headerName: 'Payment',
-      width: 180,
+      width: 200,
       renderCell: (p) => {
         const rowId = p.row.id ?? p.row._id;
         const busy = isBusy(rowId, 'payment');
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'relative' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <PaymentBadge value={p.row.payment} />
             <Tooltip title={busy ? 'Updating…' : 'Change payment'}>
               <span>
                 {busy ? (
                   <ClipLoader color="#fff" size={12} />
                 ) : (
-                  <IconButton size="small" onClick={(e) => openPaymentMenu(e, p.row)} sx={{ opacity: busy ? 0.5 : 1 }}>
+                  <IconButton size="small" onClick={(e) => openPaymentMenu(e, p.row)}>
                     <MoreVertIcon sx={{ color: '#e5e7eb' }} fontSize="small" />
                   </IconButton>
                 )}
@@ -422,7 +445,6 @@ export default function ViewOrders() {
         rows={data?.rows || []}
         getRowId={(row) => row.id ?? row._id}
         columns={columns}
-        // IMPORTANT: remove updateMutation.isPending here to avoid global overlay
         loading={isLoading || isFetching}
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
         pageSizeOptions={[12]}
@@ -430,23 +452,17 @@ export default function ViewOrders() {
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
-        // onRowClick={(params) => {
-        //   // params.id === result of getRowId -> row._id
-        //   navigate(`/order-detail/${params.id}`);
-        // }}
         sx={{
           border: 'none',
           '& .MuiDataGrid-row': { cursor: 'pointer' },
-          '& .MuiDataGrid-row:hover': {
-            backgroundColor: 'rgba(0,0,0,0.02)'
-          }
+          '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(0,0,0,0.02)' }
         }}
         slots={{ loadingOverlay: LoadingOverlay }}
       />
 
       {/* STATUS MENU */}
       <Menu anchorEl={statusMenu.anchor} open={Boolean(statusMenu.anchor)} onClose={closeStatusMenu} keepMounted>
-        {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned'].map((s) => (
+        {ORDER_STATUS.map((s) => (
           <MenuItem key={s} onClick={() => changeStatus(s)} sx={{ textTransform: 'capitalize' }}>
             {s}
           </MenuItem>

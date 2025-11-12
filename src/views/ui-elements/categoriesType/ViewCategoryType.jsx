@@ -1,14 +1,90 @@
 // src/pages/.../CategoriesTable.jsx
 import * as React from 'react';
-import { Box, Alert, Chip, Tooltip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button as MuiButton } from '@mui/material';
+import {
+  Box,
+  Alert,
+  Chip,
+  Tooltip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button as MuiButton
+} from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Button from '../../../components/Button';
 import { IoBag } from 'react-icons/io5';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import { useNavigate } from 'react-router-dom';
 import { useCategoryTypes } from '../../../hooks/categoryTypes/useCategoryTypes';
 import { useDeleteCategoryType } from '../../../hooks/categoryTypes/useCategoryTypesMutation';
+
+/* ---------- pretty pill helpers ---------- */
+const pill = (bg, fg, border) => ({
+  bgcolor: bg,
+  color: fg,
+  border: `1px solid ${border}`,
+  fontWeight: 700,
+  height: 26,
+  borderRadius: 999,
+  '& .MuiChip-icon': { fontSize: 16, mr: 0.5, color: fg },
+  '& .MuiChip-label': { px: 0.75, fontSize: 12, letterSpacing: 0.2 },
+});
+
+const StockChip = ({ value }) => {
+  const v = String(value || '').toLowerCase(); // in_stock | low_stock | out_of_stock
+  if (v === 'in_stock') {
+    return (
+      <Chip
+        size="small"
+        icon={<CheckCircleIcon />}
+        label="In stock"
+        sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')}
+      />
+    );
+  }
+  if (v === 'low_stock') {
+    return (
+      <Chip
+        size="small"
+        icon={<ReportProblemIcon />}
+        label="Low stock"
+        sx={pill('rgba(245,158,11,0.18)', '#fbbf24', 'rgba(245,158,11,0.45)')}
+      />
+    );
+  }
+  // default -> out_of_stock or anything else
+  return (
+    <Chip
+      size="small"
+      icon={<CancelIcon />}
+      label="Out of stock"
+      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
+    />
+  );
+};
+
+const ActiveChip = ({ value }) =>
+  value ? (
+    <Chip
+      size="small"
+      icon={<CheckCircleIcon />}
+      label="Active"
+      sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')}
+    />
+  ) : (
+    <Chip
+      size="small"
+      icon={<CancelIcon />}
+      label="Inactive"
+      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
+    />
+  );
 
 export default function ViewCategoryType() {
   const navigate = useNavigate();
@@ -25,7 +101,6 @@ export default function ViewCategoryType() {
   });
 
   const openConfirm = (row) => setConfirm({ open: true, id: row.id, name: row.name });
-
   const closeConfirm = () => setConfirm({ open: false, id: null, name: '' });
 
   const handleConfirmDelete = async () => {
@@ -42,17 +117,30 @@ export default function ViewCategoryType() {
       { field: 'name', headerName: 'Name', flex: 1, width: 220 },
       { field: 'ar_name', headerName: 'Ar Name', flex: 1, width: 220 },
       { field: 'slug', headerName: 'Slug', flex: 1, width: 220 },
-      { field: 'totalStock', headerName: 'Total Stocks', flex: 1, width: 220 },
-      { field: 'totalPieceUsed', headerName: 'Total Piece Used', flex: 1, width: 220 },
-      { field: 'remainingStock', headerName: 'Remaining Stocks', flex: 1, width: 220 },
-      { field: 'stockStatus', headerName: 'Stock Status', flex: 1, width: 220 },
+      { field: 'totalStock', headerName: 'Total Stocks', flex: 1, width: 180, type: 'number' },
+      { field: 'totalPieceUsed', headerName: 'Total Piece Used', flex: 1, width: 180, type: 'number' },
+      { field: 'remainingStock', headerName: 'Remaining Stocks', flex: 1, width: 180, type: 'number' },
+
+      // ---- Stock status badge ----
+      {
+        field: 'stockStatus',
+        headerName: 'Stock Status',
+        flex: 1,
+        width: 180,
+        sortable: true,
+        renderCell: (params) => <StockChip value={params.value} />
+      },
+
+      // ---- Active/Inactive badge ----
       {
         field: 'isActive',
         headerName: 'Active',
         flex: 1,
-        minWidth: 250,
-        renderCell: (params) => <Chip label={params.value ? 'Active' : 'Inactive'} color={params.value ? 'success' : 'error'} />
+        minWidth: 200,
+        sortable: true,
+        renderCell: (params) => <ActiveChip value={params.value} />
       },
+
       {
         field: 'actions',
         headerName: 'Actions',
