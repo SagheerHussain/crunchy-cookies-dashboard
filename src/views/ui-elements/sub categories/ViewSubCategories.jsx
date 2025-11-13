@@ -22,6 +22,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from 'react-router-dom';
 import { useSubCategories } from '../../../hooks/subCategories/useSubCategories';
 import { useDeleteSubCategory } from '../../../hooks/subCategories/useSubCategoryMutation';
+import TablePagination from '../../../components/TablePagination';
 
 /* ---------- pretty pill helper + chip ---------- */
 const pill = (bg, fg, border) => ({
@@ -37,19 +38,9 @@ const pill = (bg, fg, border) => ({
 
 const ActiveChip = ({ value }) =>
   value ? (
-    <Chip
-      size="small"
-      icon={<CheckCircleIcon />}
-      label="Active"
-      sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')}
-    />
+    <Chip size="small" icon={<CheckCircleIcon />} label="Active" sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')} />
   ) : (
-    <Chip
-      size="small"
-      icon={<CancelIcon />}
-      label="Inactive"
-      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
-    />
+    <Chip size="small" icon={<CancelIcon />} label="Inactive" sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')} />
   );
 
 export default function ViewSubCategories() {
@@ -167,12 +158,41 @@ export default function ViewSubCategories() {
         rows={data?.rows ?? []}
         columns={columns}
         getRowId={(r) => r.id}
-        initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
+        pagination
         pageSizeOptions={[12]}
+        initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
         checkboxSelection
         disableRowSelectionOnClick
         autoHeight
         loading={isLoading}
+        // 🔹 Custom teal pagination
+        slots={{ pagination: TablePagination }}
+        sx={{
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "#e5e7eb",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            color: "#cbd5e1",
+          },
+          "& .MuiDataGrid-cell": { borderColor: "rgba(255,255,255,0.06)" },
+          "& .MuiDataGrid-row:nth-of-type(odd)": {
+            backgroundColor: "rgba(255,255,255,0.02)",
+          },
+          "& .MuiDataGrid-row--borderBottom": {
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
+          },
+          "& .MuiDataGrid-row.blocked": {
+            background:
+              "linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.0))",
+          },
+          "& .MuiDataGrid-virtualScroller": { overflowX: "hidden" },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            bgcolor: 'transparent',
+            minHeight: 64
+          }
+        }}
       />
 
       {/* Confirm Delete Dialog */}

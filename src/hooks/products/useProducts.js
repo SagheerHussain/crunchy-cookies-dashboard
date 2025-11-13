@@ -1,13 +1,12 @@
 // src/hooks/categories/useCategories.js
 import { useQuery } from "@tanstack/react-query";
 import { getProductsLists, getProductNames } from "../../api/products";
-getProductNames
 const productsKey = (params = {}) => ["products", params];
 
 export function useProducts(params = {}) {
   return useQuery({
     queryKey: productsKey(params),
-    queryFn: () => getProductsLists(params),
+    queryFn: () => getProductsLists(params), // params may contain: stockStatus, from, to, q, page, limit...
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     refetchOnMount: "always",

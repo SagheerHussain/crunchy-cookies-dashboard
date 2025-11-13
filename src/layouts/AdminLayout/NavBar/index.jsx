@@ -22,7 +22,7 @@ export default function NavBar() {
 
   let navBar = (
     <>
-      <div className="header-wrapper" style={{ backgroundColor: "#111" }}>
+      <div className="header-wrapper" style={{ backgroundColor: "#111", borderBottom: "1px solid #ffffff2f" }}>
         {/* <div className={mobDrpClass.join(' ')}>
           <NavLeft />
         </div> */}

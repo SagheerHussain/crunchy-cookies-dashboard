@@ -58,6 +58,14 @@ const menuItems = {
           icon: 'material-icons-two-tone',
           iconname: 'shopping_bag',  // ✅ fixed (was 'product')
           url: '/products'
+        },
+        {
+          id: 'recipes',
+          title: 'Recipes',
+          type: 'item',
+          icon: 'material-icons-two-tone',
+          iconname: 'style', // category types
+          url: '/categoryTypes'
         }
       ]
     },
@@ -101,14 +109,14 @@ const menuItems = {
           iconname: 'layers', // sub categories
           url: '/subCategories'
         },
-        {
-          id: 'categoryType',
-          title: 'Category Types',
-          type: 'item',
-          icon: 'material-icons-two-tone',
-          iconname: 'style', // category types
-          url: '/categoryTypes'
-        }
+        // {
+        //   id: 'categoryType',
+        //   title: 'Recipes',
+        //   type: 'item',
+        //   icon: 'material-icons-two-tone',
+        //   iconname: 'style', // category types
+        //   url: '/categoryTypes'
+        // }
       ]
     },
     {

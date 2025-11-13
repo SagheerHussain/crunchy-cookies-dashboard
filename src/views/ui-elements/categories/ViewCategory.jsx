@@ -22,6 +22,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../../../hooks/categories/useCategories';
 import { useDeleteCategory } from '../../../hooks/categories/useCategoryMutation';
+import TablePagination from '../../../components/TablePagination';
 
 /* ---------- pretty pill helper ---------- */
 const pill = (bg, fg, border) => ({
@@ -168,12 +169,41 @@ export default function CategoriesTable() {
         rows={data?.rows ?? []}
         columns={columns}
         getRowId={(r) => r.id}
+        pagination
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
         pageSizeOptions={[12]}
         checkboxSelection
         disableRowSelectionOnClick
         autoHeight
         loading={isLoading}
+        // 👇 hamara dark glass pagination
+        slots={{ pagination: TablePagination }}
+        sx={{
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "#e5e7eb",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            color: "#cbd5e1",
+          },
+          "& .MuiDataGrid-cell": { borderColor: "rgba(255,255,255,0.06)" },
+          "& .MuiDataGrid-row:nth-of-type(odd)": {
+            backgroundColor: "rgba(255,255,255,0.02)",
+          },
+          "& .MuiDataGrid-row--borderBottom": {
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
+          },
+          "& .MuiDataGrid-row.blocked": {
+            background:
+              "linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.0))",
+          },
+          "& .MuiDataGrid-virtualScroller": { overflowX: "hidden" },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            bgcolor: 'transparent',
+            minHeight: 64
+          }
+        }}
       />
 
       {/* Confirm Delete Dialog */}

@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../../hooks/orders/useOrders';
 import { useUpdateOrder } from '../../../hooks/orders/useOrderMutation';
 import { ClipLoader } from 'react-spinners';
+import TablePagination from '../../../components/TablePagination';
 
 const ORDER_STATUS = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned'];
 const PAYMENT_STATUS = ['pending', 'paid', 'failed', 'refunded', 'partial'];
@@ -38,26 +39,26 @@ const pill = (bg, fg, border) => ({
   background: bg,
   color: fg,
   border: `1px solid ${border}`,
-  textTransform: 'capitalize',
+  textTransform: 'capitalize'
 });
 
 const STATUS_STYLE = {
-  pending:   { bg: 'rgba(245,158,11,0.16)', fg: '#fbbf24', br: 'rgba(245,158,11,0.35)', Icon: ScheduleIcon },
+  pending: { bg: 'rgba(245,158,11,0.16)', fg: '#fbbf24', br: 'rgba(245,158,11,0.35)', Icon: ScheduleIcon },
   confirmed: { bg: 'rgba(59,130,246,0.16)', fg: '#93c5fd', br: 'rgba(59,130,246,0.35)', Icon: TaskAltIcon },
-  shipped:   { bg: 'rgba(99,102,241,0.16)', fg: '#a5b4fc', br: 'rgba(99,102,241,0.35)', Icon: LocalShippingIcon },
+  shipped: { bg: 'rgba(99,102,241,0.16)', fg: '#a5b4fc', br: 'rgba(99,102,241,0.35)', Icon: LocalShippingIcon },
   delivered: { bg: 'rgba(16,185,129,0.16)', fg: '#86efac', br: 'rgba(16,185,129,0.45)', Icon: CheckCircleIcon },
   cancelled: { bg: 'rgba(239,68,68,0.16)', fg: '#fca5a5', br: 'rgba(239,68,68,0.42)', Icon: CancelIcon },
-  returned:  { bg: 'rgba(244,114,182,0.16)', fg: '#f9a8d4', br: 'rgba(244,114,182,0.42)', Icon: UTurnLeftIcon },
-  default:   { bg: 'rgba(148,163,184,0.16)', fg: '#cbd5e1', br: 'rgba(148,163,184,0.35)', Icon: ScheduleIcon },
+  returned: { bg: 'rgba(244,114,182,0.16)', fg: '#f9a8d4', br: 'rgba(244,114,182,0.42)', Icon: UTurnLeftIcon },
+  default: { bg: 'rgba(148,163,184,0.16)', fg: '#cbd5e1', br: 'rgba(148,163,184,0.35)', Icon: ScheduleIcon }
 };
 
 const PAYMENT_STYLE = {
-  pending:  { bg: 'rgba(245,158,11,0.16)', fg: '#fbbf24', br: 'rgba(245,158,11,0.35)', Icon: ScheduleIcon },
-  paid:     { bg: 'rgba(16,185,129,0.16)', fg: '#86efac', br: 'rgba(16,185,129,0.45)', Icon: PaymentsIcon },
-  failed:   { bg: 'rgba(239,68,68,0.16)', fg: '#fca5a5', br: 'rgba(239,68,68,0.42)', Icon: ErrorIcon },
+  pending: { bg: 'rgba(245,158,11,0.16)', fg: '#fbbf24', br: 'rgba(245,158,11,0.35)', Icon: ScheduleIcon },
+  paid: { bg: 'rgba(16,185,129,0.16)', fg: '#86efac', br: 'rgba(16,185,129,0.45)', Icon: PaymentsIcon },
+  failed: { bg: 'rgba(239,68,68,0.16)', fg: '#fca5a5', br: 'rgba(239,68,68,0.42)', Icon: ErrorIcon },
   refunded: { bg: 'rgba(56,189,248,0.16)', fg: '#7dd3fc', br: 'rgba(56,189,248,0.42)', Icon: ReplayIcon },
-  partial:  { bg: 'rgba(99,102,241,0.16)', fg: '#a5b4fc', br: 'rgba(99,102,241,0.35)', Icon: DonutLargeIcon },
-  default:  { bg: 'rgba(148,163,184,0.16)', fg: '#cbd5e1', br: 'rgba(148,163,184,0.35)', Icon: ScheduleIcon },
+  partial: { bg: 'rgba(99,102,241,0.16)', fg: '#a5b4fc', br: 'rgba(99,102,241,0.35)', Icon: DonutLargeIcon },
+  default: { bg: 'rgba(148,163,184,0.16)', fg: '#cbd5e1', br: 'rgba(148,163,184,0.35)', Icon: ScheduleIcon }
 };
 
 function StatusBadge({ value }) {
@@ -447,17 +448,40 @@ export default function ViewOrders() {
         columns={columns}
         loading={isLoading || isFetching}
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
+        pagination
         pageSizeOptions={[12]}
         checkboxSelection
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
+        slots={{ pagination: TablePagination }}
         sx={{
-          border: 'none',
-          '& .MuiDataGrid-row': { cursor: 'pointer' },
-          '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(0,0,0,0.02)' }
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "#e5e7eb",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            color: "#cbd5e1",
+          },
+          "& .MuiDataGrid-cell": { borderColor: "rgba(255,255,255,0.06)" },
+          "& .MuiDataGrid-row:nth-of-type(odd)": {
+            backgroundColor: "rgba(255,255,255,0.02)",
+          },
+          "& .MuiDataGrid-row--borderBottom": {
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
+          },
+          "& .MuiDataGrid-row.blocked": {
+            background:
+              "linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.0))",
+          },
+          "& .MuiDataGrid-virtualScroller": { overflowX: "hidden" },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            bgcolor: 'transparent',
+            minHeight: 64
+          }
         }}
-        slots={{ loadingOverlay: LoadingOverlay }}
+        // slots={{ loadingOverlay: LoadingOverlay }}
       />
 
       {/* STATUS MENU */}

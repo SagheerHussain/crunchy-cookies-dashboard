@@ -156,40 +156,13 @@ const AddOrEditCategoryType = () => {
                       onChange={(e) => setField('totalPieceUsed', e.target.value)}
                     />
                   </div>
-
-                  <div style={{ width: '100%' }}>
-                    <Autocomplete
-                      options={options}
-                      loading={catsLoading}
-                      value={selectedParent}
-                      onChange={(_, v) => setField('parent', v?.id ?? '')}
-                      getOptionLabel={(o) => (o?.name ? o.name : '')}
-                      isOptionEqualToValue={(opt, val) => opt?.id === val?.id}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Parent Category"
-                          disabled={disabled}
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
-                              <>
-                                {catsLoading ? <CircularProgress size={18} /> : null}
-                                {params.InputProps.endAdornment}
-                              </>
-                            )
-                          }}
-                        />
-                      )}
-                    />
-                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Stack direction="row" spacing={1.5}>
               <Btn type="submit" isStartIcon startIcon={<Save />} variant="contained" color="primary" disabled={disabled}>
-                {isEdit ? 'Save Changes' : 'Add Sub Category'}
+                {isEdit ? 'Save Changes' : 'Add Recipe'}
               </Btn>
               <MuiButton variant="outlined" onClick={() => navigate(-1)} disabled={disabled}>
                 Cancel

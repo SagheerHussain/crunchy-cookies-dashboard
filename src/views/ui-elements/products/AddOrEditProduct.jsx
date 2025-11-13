@@ -592,7 +592,7 @@ export default function AddOrEditProduct() {
                   renderInput={(p) => (
                     <TextField
                       {...p}
-                      label="Sub-Categories"
+                      label="Select Categories"
                       placeholder="Select one or more"
                       disabled={saving}
                     />

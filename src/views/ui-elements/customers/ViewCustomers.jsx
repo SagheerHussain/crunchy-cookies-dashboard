@@ -24,6 +24,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { useUsers } from "../../../hooks/users/useUsers";
+import TablePagination from "../../../components/TablePagination";
 
 /* ---------- Small helpers ---------- */
 const formatDOB = (v) => (typeof v === "string" ? v.split("T")[0] : v ?? "-");
@@ -289,12 +290,13 @@ export default function ViewCustomers() {
           pinnedColumns: { right: ["actions"] },
         }}
         onPaginationModelChange={(m) => setPageSize(m.pageSize)}
+        slots={{ pagination: TablePagination }}
         // Toolbar & overlays
-        slots={{
-          toolbar: UsersToolbar,
-          loadingOverlay: LoadingOverlay,
-          noRowsOverlay: NoRows,
-        }}
+        // slots={{
+        //   toolbar: UsersToolbar,
+        //   loadingOverlay: LoadingOverlay,
+        //   noRowsOverlay: NoRows,
+        // }}
         slotProps={{
           toolbar: {
             onRefresh: () => {
@@ -324,6 +326,11 @@ export default function ViewCustomers() {
               "linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.0))",
           },
           "& .MuiDataGrid-virtualScroller": { overflowX: "hidden" },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            bgcolor: 'transparent',
+            minHeight: 64
+          }
         }}
         /** tint row if inactive */
         getRowClassName={(params) => {

@@ -23,6 +23,7 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import { useNavigate } from 'react-router-dom';
 import { useCategoryTypes } from '../../../hooks/categoryTypes/useCategoryTypes';
 import { useDeleteCategoryType } from '../../../hooks/categoryTypes/useCategoryTypesMutation';
+import TablePagination from '../../../components/TablePagination';
 
 /* ---------- pretty pill helpers ---------- */
 const pill = (bg, fg, border) => ({
@@ -33,7 +34,7 @@ const pill = (bg, fg, border) => ({
   height: 26,
   borderRadius: 999,
   '& .MuiChip-icon': { fontSize: 16, mr: 0.5, color: fg },
-  '& .MuiChip-label': { px: 0.75, fontSize: 12, letterSpacing: 0.2 },
+  '& .MuiChip-label': { px: 0.75, fontSize: 12, letterSpacing: 0.2 }
 });
 
 const StockChip = ({ value }) => {
@@ -60,30 +61,15 @@ const StockChip = ({ value }) => {
   }
   // default -> out_of_stock or anything else
   return (
-    <Chip
-      size="small"
-      icon={<CancelIcon />}
-      label="Out of stock"
-      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
-    />
+    <Chip size="small" icon={<CancelIcon />} label="Out of stock" sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')} />
   );
 };
 
 const ActiveChip = ({ value }) =>
   value ? (
-    <Chip
-      size="small"
-      icon={<CheckCircleIcon />}
-      label="Active"
-      sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')}
-    />
+    <Chip size="small" icon={<CheckCircleIcon />} label="Active" sx={pill('rgba(16,185,129,0.18)', '#86efac', 'rgba(16,185,129,0.45)')} />
   ) : (
-    <Chip
-      size="small"
-      icon={<CancelIcon />}
-      label="Inactive"
-      sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')}
-    />
+    <Chip size="small" icon={<CancelIcon />} label="Inactive" sx={pill('rgba(239,68,68,0.18)', '#fca5a5', 'rgba(239,68,68,0.45)')} />
   );
 
 export default function ViewCategoryType() {
@@ -172,9 +158,9 @@ export default function ViewCategoryType() {
   return (
     <Box sx={{ width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h4 style={{ color: '#fff', fontSize: 24, fontWeight: 600, marginBottom: '1rem' }}>Category Types</h4>
+        <h4 style={{ color: '#fff', fontSize: 24, fontWeight: 600, marginBottom: '1rem' }}>Recipes</h4>
         <Button isLink to="/categoryTypes/add" isStartIcon startIcon={<IoBag />} variant="contained" color="primary">
-          Add Category Type
+          Add Recipe
         </Button>
       </div>
 
@@ -196,17 +182,46 @@ export default function ViewCategoryType() {
         rows={data?.rows ?? []}
         columns={columns}
         getRowId={(r) => r.id}
+        pagination
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
         pageSizeOptions={[12]}
         checkboxSelection
         disableRowSelectionOnClick
         autoHeight
         loading={isLoading}
+        // 👇 hamara dark glass pagination
+        slots={{ pagination: TablePagination }}
+        sx={{
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "#e5e7eb",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            color: "#cbd5e1",
+          },
+          "& .MuiDataGrid-cell": { borderColor: "rgba(255,255,255,0.06)" },
+          "& .MuiDataGrid-row:nth-of-type(odd)": {
+            backgroundColor: "rgba(255,255,255,0.02)",
+          },
+          "& .MuiDataGrid-row--borderBottom": {
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
+          },
+          "& .MuiDataGrid-row.blocked": {
+            background:
+              "linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.0))",
+          },
+          "& .MuiDataGrid-virtualScroller": { overflowX: "hidden" },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            bgcolor: 'transparent',
+            minHeight: 64
+          }
+        }}
       />
 
       {/* Confirm Delete Dialog */}
       <Dialog open={confirm.open} onClose={isPending ? undefined : closeConfirm}>
-        <DialogTitle>Delete Category Type?</DialogTitle>
+        <DialogTitle>Delete Recipe?</DialogTitle>
         <DialogContent>
           Are you sure you want to delete <strong>{confirm.name}</strong>? This action cannot be undone.
         </DialogContent>

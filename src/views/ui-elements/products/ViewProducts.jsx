@@ -23,6 +23,7 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -30,6 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../../hooks/products/useProducts';
 import { useDeleteProduct } from '../../../hooks/products/useProductMutation';
 import { ClipLoader } from 'react-spinners';
+import TablePagination from '../../../components/TablePagination';
 
 const SOFT = {
   success: { color: '#34ff82', bg: 'rgba(34,197,94,0.18)', border: 'rgba(34,197,94,0.28)' },
@@ -41,7 +43,8 @@ const SOFT = {
 };
 
 // date helpers (YYYY-MM-DD local)
-const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const ymd = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const todayRange = () => {
   const t = new Date();
   const s = new Date(t.getFullYear(), t.getMonth(), t.getDate());
@@ -49,7 +52,10 @@ const todayRange = () => {
 };
 const thisMonthRange = () => {
   const n = new Date();
-  return { from: ymd(new Date(n.getFullYear(), n.getMonth(), 1)), to: ymd(new Date(n.getFullYear(), n.getMonth() + 1, 0)) };
+  return {
+    from: ymd(new Date(n.getFullYear(), n.getMonth(), 1)),
+    to: ymd(new Date(n.getFullYear(), n.getMonth() + 1, 0))
+  };
 };
 const thisYearRange = () => {
   const n = new Date();
@@ -126,14 +132,26 @@ export default function ProductsTable() {
   const openFilter = (e) => setAnchorEl(e.currentTarget);
   const closeFilter = () => setAnchorEl(null);
 
+  // 🔍 search state + debounce (goes to backend as `q`)
+  const [search, setSearch] = React.useState('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+
+  React.useEffect(() => {
+    const id = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 400); // 400ms debounce
+    return () => clearTimeout(id);
+  }, [search]);
+
   // query params for hook
   const params = React.useMemo(() => {
     const p = {};
     if (stockStatus !== 'all') p.stockStatus = stockStatus;
     if (from) p.from = from;
     if (to) p.to = to;
+    if (debouncedSearch) p.q = debouncedSearch; // 👈 backend search param
     return p;
-  }, [stockStatus, from, to]);
+  }, [stockStatus, from, to, debouncedSearch]);
 
   const { data: products, isLoading, isFetching } = useProducts(params);
   const delMutation = useDeleteProduct();
@@ -185,10 +203,16 @@ export default function ProductsTable() {
       }
     },
     { field: 'sku', headerName: 'SKU', width: 140 },
-    { field: 'price', headerName: 'Price', type: 'number', width: 120, valueFormatter: (p) => `QAR ${Number(p).toFixed(2)}` },
+    {
+      field: 'price',
+      headerName: 'Price',
+      type: 'number',
+      width: 120,
+      valueFormatter: (p) => `QAR ${Number(p).toFixed(2)}`
+    },
     { field: 'remainingStocks', headerName: 'Remaining', type: 'number', width: 120 },
 
-    // >>> NEW nicer stock badge
+    // nicer stock badge
     {
       field: 'stockStatus',
       headerName: 'Status',
@@ -202,7 +226,8 @@ export default function ProductsTable() {
       headerName: 'Created',
       width: 140,
       valueGetter: (p) => new Date(p.value),
-      valueFormatter: (p) => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(p.value)
+      valueFormatter: (p) =>
+        new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(p.value)
     },
     {
       field: 'actions',
@@ -248,19 +273,28 @@ export default function ProductsTable() {
   return (
     <Box sx={{ width: '100%', position: 'relative', pb: 8 }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem'
+        }}
+      >
         <h4 style={{ color: '#fff', fontSize: 24, fontWeight: 600, marginBottom: '1rem' }}>Products</h4>
         <Button isLink to="/products/add" isStartIcon startIcon={<IoBag />} variant="contained" color="primary">
           Add Product
         </Button>
       </div>
 
-      {/* Status Tabs */}
+      {/* Status Tabs + Search + Filter */}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginBottom: 12 }}>
+        {/* tabs */}
         <div>
-          {['all', 'in_stock', 'low_stock', 'out_of_stock'].map((t) => {
+          {TABS.map((t) => {
             const active = t === stockStatus;
-            const label = t === 'all' ? 'All' : t === 'in_stock' ? 'In Stock' : t === 'low_stock' ? 'Low Stock' : 'Out Of Stock';
+            const label =
+              t === 'all' ? 'All' : t === 'in_stock' ? 'In Stock' : t === 'low_stock' ? 'Low Stock' : 'Out Of Stock';
             return (
               <button
                 key={t}
@@ -282,138 +316,198 @@ export default function ProductsTable() {
           })}
         </div>
 
-        <div>
+        {/* search + filter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* 🔍 Search pill */}
+          <div
+            style={{
+              position: 'relative',
+              minWidth: 260
+            }}
+          >
+            <SearchIcon
+              sx={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 20,
+                color: 'rgba(148,163,184,0.9)'
+              }}
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search title, SKU, description…"
+              style={{
+                width: '100%',
+                padding: '8px 32px 8px 34px',
+                borderRadius: 999,
+                border: '1px solid #ffffff2f',
+                background: '#222',
+                color: '#e5e7eb',
+                fontSize: 13,
+                outline: 'none',
+                boxShadow: '0 0 0 1px rgba(15,23,42,0.9)'
+              }}
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                style={{
+                  position: 'absolute',
+                  right: 8,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  borderRadius: '999px',
+                  border: 'none',
+                  background: 'rgba(148,163,184,0.18)',
+                  color: '#e5e7eb',
+                  width: 20,
+                  height: 20,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  lineHeight: '20px'
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
           {/* Filter button */}
           <Tooltip title="Filter by Date">
             <IconButton onClick={openFilter} sx={{ position: 'static', zIndex: 1300 }} size="large">
               <FilterListIcon sx={{ color: '#e5e7eb' }} />
             </IconButton>
           </Tooltip>
+        </div>
 
-          {/* Date Filter Popover */}
-          <Popover
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={closeFilter}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            PaperProps={{
-              sx: {
-                p: 2,
-                background: 'rgba(0,0,0,0.95)',
-                color: '#e5e7eb',
-                border: '1px solid rgba(255,255,255,0.12)',
-                minWidth: 320
-              }
-            }}
-          >
-            {/* Preset chips */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-              {[
-                { label: 'Today', get: todayRange },
-                { label: 'This Month', get: thisMonthRange },
-                { label: 'This Year', get: thisYearRange },
-                { label: 'Previous Year', get: prevYearRange }
-              ].map(({ label, get }) => (
-                <button
-                  key={label}
-                  onClick={() => {
-                    const r = get();
-                    setFrom(r.from);
-                    setTo(r.to);
-                    closeFilter();
-                  }}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 999,
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    background: 'rgba(55,65,81,0.6)',
-                    color: '#e5e7eb',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom range */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-              <div>
-                <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>From</div>
-                <input
-                  type="date"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    background: 'rgba(17,24,39,0.6)',
-                    color: '#e5e7eb'
-                  }}
-                />
-              </div>
-              <div>
-                <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>To</div>
-                <input
-                  type="date"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    background: 'rgba(17,24,39,0.6)',
-                    color: '#e5e7eb'
-                  }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        {/* Date Filter Popover */}
+        <Popover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={closeFilter}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 2,
+              background: 'rgba(0,0,0,0.95)',
+              color: '#e5e7eb',
+              border: '1px solid rgba(255,255,255,0.12)',
+              minWidth: 320
+            }
+          }}
+        >
+          {/* Preset chips */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+            {[
+              { label: 'Today', get: todayRange },
+              { label: 'This Month', get: thisMonthRange },
+              { label: 'This Year', get: thisYearRange },
+              { label: 'Previous Year', get: prevYearRange }
+            ].map(({ label, get }) => (
               <button
+                key={label}
                 onClick={() => {
-                  setFrom('');
-                  setTo('');
+                  const r = get();
+                  setFrom(r.from);
+                  setTo(r.to);
                   closeFilter();
                 }}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: 8,
+                  padding: '6px 10px',
+                  borderRadius: 999,
                   border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'transparent',
+                  background: 'rgba(55,65,81,0.6)',
                   color: '#e5e7eb',
+                  fontWeight: 600,
                   cursor: 'pointer'
                 }}
               >
-                Clear
+                {label}
               </button>
-              <button
-                onClick={closeFilter}
+            ))}
+          </div>
+
+          {/* Custom range */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>From</div>
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
                 style={{
-                  padding: '8px 12px',
+                  width: '100%',
+                  padding: '8px',
                   borderRadius: 8,
-                  border: '1px solid rgba(34,197,94,0.4)',
-                  background: 'rgba(34,197,94,0.15)',
-                  color: '#d1fae5',
-                  fontWeight: 700,
-                  cursor: 'pointer'
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  background: 'rgba(17,24,39,0.6)',
+                  color: '#e5e7eb'
                 }}
-              >
-                Apply
-              </button>
+              />
             </div>
-          </Popover>
-        </div>
+            <div>
+              <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>To</div>
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  background: 'rgba(17,24,39,0.6)',
+                  color: '#e5e7eb'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+            <button
+              onClick={() => {
+                setFrom('');
+                setTo('');
+                closeFilter();
+              }}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'transparent',
+                color: '#e5e7eb',
+                cursor: 'pointer'
+              }}
+            >
+              Clear
+            </button>
+            <button
+              onClick={closeFilter}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid rgba(34,197,94,0.4)',
+                background: 'rgba(34,197,94,0.15)',
+                color: '#d1fae5',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </Popover>
       </div>
 
       {/* DataGrid */}
       <DataGrid
-        rows={products?.rows?.reverse() || []}
+        rows={products?.rows?.slice().reverse() || []}
         columns={columns}
         loading={isLoading || isFetching}
         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
@@ -422,7 +516,29 @@ export default function ProductsTable() {
         disableRowSelectionOnClick
         autoHeight
         localeText={{ noRowsLabel: 'No items found' }}
-        slots={{ loadingOverlay: LoadingOverlay }}
+        slots={{ pagination: TablePagination, loadingOverlay: LoadingOverlay }}
+        sx={{
+          border: '1px solid rgba(255,255,255,0.08)',
+          color: '#e5e7eb',
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            color: '#cbd5e1'
+          },
+          '& .MuiDataGrid-cell': { borderColor: 'rgba(255,255,255,0.06)' },
+          '& .MuiDataGrid-row:nth-of-type(odd)': {
+            backgroundColor: 'rgba(255,255,255,0.02)'
+          },
+          '& .MuiDataGrid-row--borderBottom': {
+            borderBottom: '1px solid rgba(255,255,255,0.04)'
+          },
+          '& .MuiDataGrid-virtualScroller': { overflowX: 'hidden' },
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: 'none',
+            bgcolor: 'transparent',
+            minHeight: 64
+          }
+        }}
       />
 
       {/* Confirm Delete Dialog */}
@@ -430,7 +546,8 @@ export default function ProductsTable() {
         <DialogTitle>Delete product?</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Are you sure you want to delete <strong>{confirm.title || 'this product'}</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong>{confirm.title || 'this product'}</strong>? This action cannot be
+            undone.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -444,7 +561,12 @@ export default function ProductsTable() {
       </Dialog>
 
       {/* Toast */}
-      <Snackbar open={toast.open} autoHideDuration={2500} onClose={closeToast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={2500}
+        onClose={closeToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
         <Alert onClose={closeToast} severity={toast.sev} variant="filled" sx={{ width: '100%' }}>
           {toast.msg}
         </Alert>
