@@ -5,7 +5,7 @@ export function SalesCustomerSatisfactionChartData(data = []) {
     height: 260,
     options: {
       chart: { background: 'transparent' },
-      labels: ['Poor', 'Extremely Satisfied', 'Satisfied', 'Very Poor'],
+      labels: ['Extremely Satisfied', 'Satisfied', 'Poor', 'Very Poor'],
 
       // 🔹 Legend with colored values + percentages
       legend: {
