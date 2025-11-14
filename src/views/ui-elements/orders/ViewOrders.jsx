@@ -495,7 +495,7 @@ export default function ViewOrders() {
 
       {/* PAYMENT MENU */}
       <Menu anchorEl={paymentMenu.anchor} open={Boolean(paymentMenu.anchor)} onClose={closePaymentMenu} keepMounted>
-        {['pending', 'paid'].map((s) => (
+        {['pending', 'paid', 'failed', 'refunded', 'partial'].map((s) => (
           <MenuItem key={s} onClick={() => changePayment(s)} sx={{ textTransform: 'capitalize' }}>
             {s}
           </MenuItem>
