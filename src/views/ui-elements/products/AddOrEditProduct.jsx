@@ -13,7 +13,6 @@ import {
   InputAdornment,
   Tooltip,
   LinearProgress,
-  Stack,
   Divider,
   Button as MuiButton
 } from '@mui/material';
@@ -21,16 +20,14 @@ import { Delete, Save, AutoFixHigh, Calculate } from '@mui/icons-material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Button from '../../../components/Button';
-import "./addOrEditProduct.css"
+import './addOrEditProduct.css';
 
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { getProductById } from '../../../api/products';
 import { useAddProduct, useUpdateProduct } from '../../../hooks/products/useProductMutation';
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  useBrands
-} from '../../../hooks/brands/useBrands';
+import { useBrands } from '../../../hooks/brands/useBrands';
 import { useProductNames } from '../../../hooks/products/useProducts';
 import { useCategoryTypes } from '../../../hooks/categoryTypes/useCategoryTypes';
 import { useSubCategories } from '../../../hooks/subCategories/useSubCategories';
@@ -237,6 +234,14 @@ export default function AddOrEditProduct() {
     return setField('stockStatus', 'in_stock');
   };
 
+  // helper: FormData me ObjectId array append karne ke liye
+  const appendIdArray = (fd, key, arr) => {
+    if (!Array.isArray(arr)) return;
+    arr.forEach((id) => {
+      if (id) fd.append(key, id);
+    });
+  };
+
   /* FormData */
   const buildFormData = () => {
     const fd = new FormData();
@@ -247,12 +252,33 @@ export default function AddOrEditProduct() {
     fd.append('description', form.description || '');
     fd.append('ar_description', form.ar_description || '');
     fd.append('price', form.price === '' || form.price == null ? '' : String(form.price));
-    fd.append('discount', form.discount === '' || form.discount == null ? '0' : String(form.discount));
+    fd.append(
+      'discount',
+      form.discount === '' || form.discount == null ? '0' : String(form.discount)
+    );
     fd.append('currency', form.currency || 'QAR');
-    fd.append('totalStocks', form.totalStocks === '' || form.totalStocks == null ? '' : String(form.totalStocks));
-    fd.append('remainingStocks', form.remainingStocks === '' || form.remainingStocks == null ? '' : String(form.remainingStocks));
-    fd.append('totalPieceSold', form.totalPieceSold === '' || form.totalPieceSold == null ? '0' : String(form.totalPieceSold));
-    fd.append('totalPieceCarry', form.totalPieceCarry === '' || form.totalPieceCarry == null ? '0' : String(form.totalPieceCarry));
+    fd.append(
+      'totalStocks',
+      form.totalStocks === '' || form.totalStocks == null ? '' : String(form.totalStocks)
+    );
+    fd.append(
+      'remainingStocks',
+      form.remainingStocks === '' || form.remainingStocks == null
+        ? ''
+        : String(form.remainingStocks)
+    );
+    fd.append(
+      'totalPieceSold',
+      form.totalPieceSold === '' || form.totalPieceSold == null
+        ? '0'
+        : String(form.totalPieceSold)
+    );
+    fd.append(
+      'totalPieceCarry',
+      form.totalPieceCarry === '' || form.totalPieceCarry == null
+        ? '0'
+        : String(form.totalPieceCarry)
+    );
     fd.append('stockStatus', form.stockStatus || 'in_stock');
     fd.append('condition', form.condition || 'new');
     fd.append('isActive', String(!!form.isActive));
@@ -260,11 +286,15 @@ export default function AddOrEditProduct() {
 
     fd.append('qualities', JSON.stringify(form.qualities || []));
     fd.append('ar_qualities', JSON.stringify(form.ar_qualities || []));
-    fd.append('categories', JSON.stringify(form.categories || []));
-    fd.append('occasions', JSON.stringify(form.occasions || []));
-    fd.append('recipients', JSON.stringify(form.recipients || []));
-    fd.append('colors', JSON.stringify(form.colors || []));
-    fd.append('suggestedProducts', JSON.stringify(form.suggestedProducts || []));
+
+    // 🔴 IMPORTANT PART: ObjectId arrays (no JSON.stringify)
+    appendIdArray(fd, 'categories', form.categories);
+    appendIdArray(fd, 'occasions', form.occasions);
+    appendIdArray(fd, 'recipients', form.recipients);
+    appendIdArray(fd, 'colors', form.colors);
+    appendIdArray(fd, 'suggestedProducts', form.suggestedProducts);
+    appendIdArray(fd, 'type', form.type); // type bhi yahan
+
     fd.append(
       'dimensions',
       JSON.stringify({
@@ -274,11 +304,7 @@ export default function AddOrEditProduct() {
     );
 
     if (form.brand) fd.append('brand', form.brand);
-    else fd.append('unset_brand', '1');
-    if (form.type) fd.append('type', form.type);
-    else fd.append('unset_type', '1');
     if (form.packagingOption) fd.append('packagingOption', form.packagingOption);
-    else fd.append('unset_packagingOption', '1');
 
     if (form.featuredImageFile) {
       fd.append('featuredImage', form.featuredImageFile);
@@ -366,7 +392,7 @@ export default function AddOrEditProduct() {
                   disabled={saving}
                   onChange={(e) => setField('sku', e.target.value)}
                 />
-                <Autocomplete
+                {/* <Autocomplete
                   multiple
                   freeSolo
                   options={[]}
@@ -380,7 +406,7 @@ export default function AddOrEditProduct() {
                   renderInput={(p) => (
                     <TextField {...p} label="Qualities (press Enter to add)" disabled={saving} />
                   )}
-                />
+                /> */}
               </div>
 
               <div className="pf-desc-block">
