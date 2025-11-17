@@ -41,13 +41,20 @@ const AVAILABILITY = ['in_stock', 'low_stock', 'out_of_stock'];
 const CURRENCIES = ['QAR', 'USD'];
 const CONDITIONS = ['new', 'used'];
 
+const stripHtml = (html = '') =>
+  html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+
 /* ================== Helpers ================== */
 const idOf = (x) => (x && typeof x === 'object' ? x._id : x ?? null);
 const getLabel = (o) => o?.name || o?.title || o?.label || '';
 const toOptions = (rows = []) =>
   rows?.map((r) => ({ _id: r.id ?? r._id, name: r.name ?? r.title ?? '' })) || [];
 const optionById = (opts, id) => opts.find((o) => o._id === id) || null;
-const optionsByIds = (opts, ids = []) => opts.filter((o) => ids?.includes?.(o._id));
+const optionsByIds = (opts, ids = []) =>
+  opts.filter((o) => ids?.includes?.(o._id));
 
 /* ================== Default Form ================== */
 const defaultForm = {
@@ -70,6 +77,8 @@ const defaultForm = {
   brand: null,
   categories: [],
   type: [],
+  // NEW: per-type pieces recipe
+  typePieces: [],
   totalPieceCarry: 0,
   occasions: [],
   recipients: [],
@@ -94,10 +103,12 @@ export default function AddOrEditProduct() {
   const { id } = useParams();
   const location = useLocation();
   const isEdit = Boolean(id) || location.pathname.includes('/edit');
+  const isCreate = !isEdit;
 
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const { data: detail, isFetching: isLoadingDetail } = useQuery({
     queryKey: ['product', id],
@@ -133,6 +144,18 @@ export default function AddOrEditProduct() {
     if (!isEdit || !detail) return;
     const p = detail;
 
+    const hydratedTypePieces = Array.isArray(p.typePieces)
+      ? p.typePieces.map((row) => ({
+          type: idOf(row.type),
+          pieces: row.pieces ?? 0
+        }))
+      : [];
+
+    const totalFromTypePieces = hydratedTypePieces.reduce(
+      (sum, row) => sum + (Number(row.pieces) || 0),
+      0
+    );
+
     const next = {
       title: p.title ?? '',
       ar_title: p.ar_title ?? '',
@@ -152,7 +175,12 @@ export default function AddOrEditProduct() {
       brand: idOf(p.brand),
       categories: (p.categories || []).map(idOf),
       type: (p.type || []).map(idOf),
-      totalPieceCarry: p.totalPieceCarry ?? 0,
+
+      // NEW: recipe + total
+      typePieces: hydratedTypePieces,
+      totalPieceCarry:
+        p.totalPieceCarry != null ? p.totalPieceCarry : totalFromTypePieces,
+
       occasions: (p.occasions || []).map(idOf),
       recipients: (p.recipients || []).map(idOf),
       colors: (p.colors || []).map(idOf),
@@ -234,12 +262,91 @@ export default function AddOrEditProduct() {
     return setField('stockStatus', 'in_stock');
   };
 
+  // NEW: sum of pieces from recipe
+  const typePiecesTotal = useMemo(
+    () =>
+      (form.typePieces || []).reduce(
+        (sum, row) => sum + (Number(row.pieces) || 0),
+        0
+      ),
+    [form.typePieces]
+  );
+
   // helper: FormData me ObjectId array append karne ke liye
   const appendIdArray = (fd, key, arr) => {
     if (!Array.isArray(arr)) return;
     arr.forEach((id) => {
       if (id) fd.append(key, id);
     });
+  };
+
+  // Validate Form Data
+  const validateForm = () => {
+    const errs = {};
+
+    if (isCreate) {
+      // basics
+      if (!form.title.trim()) errs.title = 'Title is required';
+      if (!form.ar_title.trim()) errs.ar_title = 'Arabic title is required';
+      if (!form.sku.trim()) errs.sku = 'SKU is required';
+
+      // descriptions (strip HTML)
+      if (!stripHtml(form.description)) {
+        errs.description = 'Description (English) is required';
+      }
+      if (!stripHtml(form.ar_description)) {
+        errs.ar_description = 'Description (Arabic) is required';
+      }
+
+      // pricing
+      if (!form.price || Number(form.price) <= 0) {
+        errs.price = 'Price is required';
+      }
+      if (!form.totalStocks || Number(form.totalStocks) <= 0) {
+        errs.totalStocks = 'Total stocks is required';
+      }
+
+      // media
+      const hasFeatured = !!form.featuredImageFile || !!form.featuredImage;
+      if (!hasFeatured) {
+        errs.featuredImage = 'Featured image is required';
+      }
+      const galleryCount = (form.images || []).filter(
+        (i) => i?.file || i?.url
+      ).length;
+      if (galleryCount === 0) {
+        errs.images = 'At least one gallery image is required';
+      }
+
+      // classification
+      if (!form.brand) errs.brand = 'Brand is required';
+      if (!Array.isArray(form.categories) || form.categories.length === 0) {
+        errs.categories = 'Select at least one category';
+      }
+      if (!Array.isArray(form.type) || form.type.length === 0) {
+        errs.type = 'Select at least one type';
+      }
+      if (!Array.isArray(form.occasions) || form.occasions.length === 0) {
+        errs.occasions = 'Select at least one occasion';
+      }
+      if (!Array.isArray(form.recipients) || form.recipients.length === 0) {
+        errs.recipients = 'Select at least one recipient';
+      }
+      if (!Array.isArray(form.colors) || form.colors.length === 0) {
+        errs.colors = 'Select at least one color';
+      }
+
+      // total piece carry / recipe
+      if ((form.typePieces || []).length) {
+        if (!typePiecesTotal || typePiecesTotal <= 0) {
+          errs.totalPieceCarry = 'Enter pieces for each selected type';
+        }
+      } else if (form.totalPieceCarry === '' || form.totalPieceCarry == null) {
+        errs.totalPieceCarry = 'Total piece carry is required';
+      }
+    }
+
+    return errs;
   };
 
   /* FormData */
@@ -251,15 +358,22 @@ export default function AddOrEditProduct() {
     fd.append('sku', (form.sku || '').trim());
     fd.append('description', form.description || '');
     fd.append('ar_description', form.ar_description || '');
-    fd.append('price', form.price === '' || form.price == null ? '' : String(form.price));
+    fd.append(
+      'price',
+      form.price === '' || form.price == null ? '' : String(form.price)
+    );
     fd.append(
       'discount',
-      form.discount === '' || form.discount == null ? '0' : String(form.discount)
+      form.discount === '' || form.discount == null
+        ? '0'
+        : String(form.discount)
     );
     fd.append('currency', form.currency || 'QAR');
     fd.append(
       'totalStocks',
-      form.totalStocks === '' || form.totalStocks == null ? '' : String(form.totalStocks)
+      form.totalStocks === '' || form.totalStocks == null
+        ? ''
+        : String(form.totalStocks)
     );
     fd.append(
       'remainingStocks',
@@ -273,12 +387,34 @@ export default function AddOrEditProduct() {
         ? '0'
         : String(form.totalPieceSold)
     );
+
+    // CLEAN recipe rows
+    const typePiecesClean = (form.typePieces || [])
+      .filter((row) => row && row.type && row.pieces !== '' && row.pieces != null)
+      .map((row) => ({
+        type: row.type,
+        pieces: Number(row.pieces) || 0
+      }));
+
+    const totalFromTypes = typePiecesClean.reduce(
+      (sum, row) => sum + (row.pieces || 0),
+      0
+    );
+    const totalPieceCarryValue =
+      typePiecesClean.length ? totalFromTypes : form.totalPieceCarry || 0;
+
     fd.append(
       'totalPieceCarry',
-      form.totalPieceCarry === '' || form.totalPieceCarry == null
+      totalPieceCarryValue === '' || totalPieceCarryValue == null
         ? '0'
-        : String(form.totalPieceCarry)
+        : String(totalPieceCarryValue)
     );
+
+    // send recipe only if we have at least one row
+    if (typePiecesClean.length) {
+      fd.append('typePieces', JSON.stringify(typePiecesClean));
+    }
+
     fd.append('stockStatus', form.stockStatus || 'in_stock');
     fd.append('condition', form.condition || 'new');
     fd.append('isActive', String(!!form.isActive));
@@ -287,19 +423,25 @@ export default function AddOrEditProduct() {
     fd.append('qualities', JSON.stringify(form.qualities || []));
     fd.append('ar_qualities', JSON.stringify(form.ar_qualities || []));
 
-    // 🔴 IMPORTANT PART: ObjectId arrays (no JSON.stringify)
+    // ObjectId arrays (no JSON.stringify)
     appendIdArray(fd, 'categories', form.categories);
     appendIdArray(fd, 'occasions', form.occasions);
     appendIdArray(fd, 'recipients', form.recipients);
     appendIdArray(fd, 'colors', form.colors);
     appendIdArray(fd, 'suggestedProducts', form.suggestedProducts);
-    appendIdArray(fd, 'type', form.type); // type bhi yahan
+    appendIdArray(fd, 'type', form.type);
 
     fd.append(
       'dimensions',
       JSON.stringify({
-        width: form.dimensions?.width === '' ? undefined : Number(form.dimensions?.width),
-        height: form.dimensions?.height === '' ? undefined : Number(form.dimensions?.height)
+        width:
+          form.dimensions?.width === ''
+            ? undefined
+            : Number(form.dimensions?.width),
+        height:
+          form.dimensions?.height === ''
+            ? undefined
+            : Number(form.dimensions?.height)
       })
     );
 
@@ -326,9 +468,19 @@ export default function AddOrEditProduct() {
   const loading = isLoadingDetail || isAdding || isUpdating;
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError(null);
+    setFieldErrors({});
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      setError('Please fill all required fields.');
+      return;
+    }
+
     try {
       setSaving(true);
-      setError(null);
       const formData = buildFormData();
       if (isEdit) await updateProduct({ id, formData });
       else await addProduct(formData);
@@ -374,7 +526,10 @@ export default function AddOrEditProduct() {
                   value={form.title}
                   disabled={saving}
                   onChange={(e) => setField('title', e.target.value)}
+                  error={!!fieldErrors.title}
+                  helperText={fieldErrors.title}
                 />
+
                 <TextField
                   label="العنوان (عربي) *"
                   placeholder="الورد الحمراء"
@@ -383,7 +538,10 @@ export default function AddOrEditProduct() {
                   disabled={saving}
                   onChange={(e) => setField('ar_title', e.target.value)}
                   inputProps={{ style: { direction: 'rtl', textAlign: 'right' } }}
+                  error={!!fieldErrors.ar_title}
+                  helperText={fieldErrors.ar_title}
                 />
+
                 <TextField
                   label="SKU *"
                   placeholder="123"
@@ -391,22 +549,9 @@ export default function AddOrEditProduct() {
                   value={form.sku}
                   disabled={saving}
                   onChange={(e) => setField('sku', e.target.value)}
+                  error={!!fieldErrors.sku}
+                  helperText={fieldErrors.sku}
                 />
-                {/* <Autocomplete
-                  multiple
-                  freeSolo
-                  options={[]}
-                  value={form.qualities}
-                  onChange={(_, v) => setField('qualities', v)}
-                  renderTags={(value, getTagProps) =>
-                    value.map((opt, i) => (
-                      <Chip key={opt + i} variant="outlined" label={opt} {...getTagProps({ index: i })} />
-                    ))
-                  }
-                  renderInput={(p) => (
-                    <TextField {...p} label="Qualities (press Enter to add)" disabled={saving} />
-                  )}
-                /> */}
               </div>
 
               <div className="pf-desc-block">
@@ -421,6 +566,11 @@ export default function AddOrEditProduct() {
                   readOnly={saving}
                   placeholder="Write a rich description..."
                 />
+                {fieldErrors.description && (
+                  <Typography variant="caption" color="error">
+                    {fieldErrors.description}
+                  </Typography>
+                )}
               </div>
 
               <div className="pf-desc-block">
@@ -437,6 +587,11 @@ export default function AddOrEditProduct() {
                     placeholder="...اكتب وصفاً جذاباً للمنتج"
                   />
                 </div>
+                {fieldErrors.ar_description && (
+                  <Typography variant="caption" color="error">
+                    {fieldErrors.ar_description}
+                  </Typography>
+                )}
               </div>
             </section>
 
@@ -469,6 +624,12 @@ export default function AddOrEditProduct() {
                     <div className="pf-featured-preview">
                       <img src={form.featuredImage} alt="featured" />
                     </div>
+                  )}
+
+                  {fieldErrors.featuredImage && (
+                    <Typography variant="caption" color="error">
+                      {fieldErrors.featuredImage}
+                    </Typography>
                   )}
                 </div>
 
@@ -509,6 +670,12 @@ export default function AddOrEditProduct() {
                         </div>
                       ))}
                   </div>
+
+                  {fieldErrors.images && (
+                    <Typography variant="caption" color="error">
+                      {fieldErrors.images}
+                    </Typography>
+                  )}
                 </div>
               </div>
             </section>
@@ -527,7 +694,15 @@ export default function AddOrEditProduct() {
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!brandOpts?.length}
                   onChange={(_, v) => setField('brand', v?._id || null)}
-                  renderInput={(p) => <TextField {...p} label="Brand" disabled={saving} />}
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      label="Brand *"
+                      disabled={saving}
+                      error={!!fieldErrors.brand}
+                      helperText={fieldErrors.brand}
+                    />
+                  )}
                 />
 
                 <Autocomplete
@@ -537,17 +712,104 @@ export default function AddOrEditProduct() {
                   value={optionsByIds(typeOpts, form.type)}
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!typeOpts?.length}
-                  onChange={(_, v) => setField('type', v.map((x) => x._id))}
-                  renderInput={(p) => <TextField {...p} label="Type" disabled={saving} />}
+                  onChange={(_, v) =>
+                    setForm((prev) => {
+                      const newTypeIds = v.map((x) => x._id);
+                      const prevMap = new Map(
+                        (prev.typePieces || []).map((tp) => [tp.type, tp.pieces])
+                      );
+                      const newTypePieces = newTypeIds.map((id) => ({
+                        type: id,
+                        pieces: prevMap.get(id) ?? 0
+                      }));
+                      return {
+                        ...prev,
+                        type: newTypeIds,
+                        typePieces: newTypePieces
+                      };
+                    })
+                  }
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      label="Type *"
+                      disabled={saving}
+                      error={!!fieldErrors.type}
+                      helperText={fieldErrors.type}
+                    />
+                  )}
                 />
 
-                <TextField
-                  label="Total Piece Carry"
+                {/* NEW: recipe per type */}
+                {form.type?.length > 0 && (
+                  <Box className="pf-typepieces">
+                    <div className="pf-typepieces-header">
+                      <span>Pieces per Type (Recipe)</span>
+                      <span>{typePiecesTotal} pcs total</span>
+                    </div>
+                    <div className="pf-grid-typepieces">
+                      {form.type.map((typeId) => {
+                        const opt = optionById(typeOpts, typeId);
+                        const row =
+                          (form.typePieces || []).find((tp) => tp.type === typeId) ||
+                          { pieces: 0 };
+
+                        return (
+                          <TextField
+                            key={typeId}
+                            type="number"
+                            fullWidth
+                            label={`${opt?.name || 'Type'} pcs`}
+                            disabled={saving}
+                            value={row.pieces}
+                            onChange={(e) => {
+                              const val =
+                                e.target.value === '' ? '' : Number(e.target.value);
+                              setForm((prev) => {
+                                const copy = [...(prev.typePieces || [])];
+                                const idx = copy.findIndex(
+                                  (tp) => tp.type === typeId
+                                );
+                                if (idx >= 0) {
+                                  copy[idx] = { ...copy[idx], pieces: val };
+                                } else {
+                                  copy.push({ type: typeId, pieces: val || 0 });
+                                }
+                                return { ...prev, typePieces: copy };
+                              });
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    {fieldErrors.totalPieceCarry && (
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        className="pf-typepieces-error"
+                      >
+                        {fieldErrors.totalPieceCarry}
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* <TextField
+                  label="Total Piece Carry *"
                   fullWidth
-                  disabled={saving}
-                  value={form.totalPieceCarry}
+                  disabled={saving || (form.typePieces || []).length > 0}
+                  // auto-ledger from recipe if present, else manual value
+                  value={
+                    (form.typePieces || []).length ? typePiecesTotal : form.totalPieceCarry
+                  }
                   onChange={setNumber('totalPieceCarry')}
-                />
+                  error={!!fieldErrors.totalPieceCarry && !(form.typePieces || []).length}
+                  helperText={
+                    (form.typePieces || []).length
+                      ? 'Auto-calculated from pieces per type'
+                      : fieldErrors.totalPieceCarry
+                  }
+                /> */}
 
                 <TextField
                   select
@@ -571,8 +833,21 @@ export default function AddOrEditProduct() {
                   value={optionsByIds(occasionOpts, form.occasions)}
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!occasionOpts?.length}
-                  onChange={(_, v) => setField('occasions', v.map((x) => x._id))}
-                  renderInput={(p) => <TextField {...p} label="Occas." disabled={saving} />}
+                  onChange={(_, v) =>
+                    setField(
+                      'occasions',
+                      v.map((x) => x._id)
+                    )
+                  }
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      label="Occas. *"
+                      disabled={saving}
+                      error={!!fieldErrors.occasions}
+                      helperText={fieldErrors.occasions}
+                    />
+                  )}
                 />
 
                 <Autocomplete
@@ -582,8 +857,21 @@ export default function AddOrEditProduct() {
                   value={optionsByIds(recipientOpts, form.recipients)}
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!recipientOpts?.length}
-                  onChange={(_, v) => setField('recipients', v.map((x) => x._id))}
-                  renderInput={(p) => <TextField {...p} label="Recip." disabled={saving} />}
+                  onChange={(_, v) =>
+                    setField(
+                      'recipients',
+                      v.map((x) => x._id)
+                    )
+                  }
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      label="Recip. *"
+                      disabled={saving}
+                      error={!!fieldErrors.recipients}
+                      helperText={fieldErrors.recipients}
+                    />
+                  )}
                 />
 
                 <Autocomplete
@@ -593,8 +881,21 @@ export default function AddOrEditProduct() {
                   value={optionsByIds(colorOpts, form.colors)}
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!colorOpts?.length}
-                  onChange={(_, v) => setField('colors', v.map((x) => x._id))}
-                  renderInput={(p) => <TextField {...p} label="Colors" disabled={saving} />}
+                  onChange={(_, v) =>
+                    setField(
+                      'colors',
+                      v.map((x) => x._id)
+                    )
+                  }
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      label="Colors *"
+                      disabled={saving}
+                      error={!!fieldErrors.colors}
+                      helperText={fieldErrors.colors}
+                    />
+                  )}
                 />
 
                 <Autocomplete
@@ -604,7 +905,13 @@ export default function AddOrEditProduct() {
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!packagingOpts?.length}
                   onChange={(_, v) => setField('packagingOption', v?._id || null)}
-                  renderInput={(p) => <TextField {...p} label="Packaging Option" disabled={saving} />}
+                  renderInput={(p) => (
+                    <TextField
+                      {...p}
+                      label="Packaging Option"
+                      disabled={saving}
+                    />
+                  )}
                 />
 
                 <Autocomplete
@@ -614,13 +921,20 @@ export default function AddOrEditProduct() {
                   value={optionsByIds(subcategoryOpts, form.categories)}
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!subcategoryOpts?.length}
-                  onChange={(_, v) => setField('categories', v.map((x) => x._id))}
+                  onChange={(_, v) =>
+                    setField(
+                      'categories',
+                      v.map((x) => x._id)
+                    )
+                  }
                   renderInput={(p) => (
                     <TextField
                       {...p}
-                      label="Select Categories"
+                      label="Select Categories *"
                       placeholder="Select one or more"
                       disabled={saving}
+                      error={!!fieldErrors.categories}
+                      helperText={fieldErrors.categories}
                     />
                   )}
                 />
@@ -632,7 +946,12 @@ export default function AddOrEditProduct() {
                   value={optionsByIds(namesOpts, form.suggestedProducts)}
                   isOptionEqualToValue={(o, v) => o._id === v._id}
                   loading={!namesOpts?.length}
-                  onChange={(_, v) => setField('suggestedProducts', v.map((x) => x._id))}
+                  onChange={(_, v) =>
+                    setField(
+                      'suggestedProducts',
+                      v.map((x) => x._id)
+                    )
+                  }
                   renderInput={(p) => (
                     <TextField
                       {...p}
@@ -680,6 +999,8 @@ export default function AddOrEditProduct() {
                       </InputAdornment>
                     )
                   }}
+                  error={!!fieldErrors.price}
+                  helperText={fieldErrors.price}
                 />
 
                 <TextField
@@ -724,6 +1045,8 @@ export default function AddOrEditProduct() {
                   disabled={saving}
                   value={form.totalStocks}
                   onChange={setNumber('totalStocks')}
+                  error={!!fieldErrors.totalStocks}
+                  helperText={fieldErrors.totalStocks}
                 />
 
                 <TextField
@@ -785,7 +1108,9 @@ export default function AddOrEditProduct() {
                   control={
                     <Switch
                       checked={form.isFeatured}
-                      onChange={(e) => setField('isFeatured', e.target.checked)}
+                      onChange={(e) =>
+                        setField('isFeatured', e.target.checked)
+                      }
                       disabled={saving}
                     />
                   }
@@ -803,7 +1128,8 @@ export default function AddOrEditProduct() {
                   onChange={(e) =>
                     setField('dimensions', {
                       ...form.dimensions,
-                      width: e.target.value === '' ? '' : Number(e.target.value)
+                      width:
+                        e.target.value === '' ? '' : Number(e.target.value)
                     })
                   }
                   InputProps={{
@@ -821,7 +1147,8 @@ export default function AddOrEditProduct() {
                   onChange={(e) =>
                     setField('dimensions', {
                       ...form.dimensions,
-                      height: e.target.value === '' ? '' : Number(e.target.value)
+                      height:
+                        e.target.value === '' ? '' : Number(e.target.value)
                     })
                   }
                   InputProps={{

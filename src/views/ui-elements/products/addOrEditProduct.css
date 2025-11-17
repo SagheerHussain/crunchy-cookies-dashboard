@@ -85,13 +85,7 @@
 
 @media (min-width: 768px) {
   .pf-grid-basics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .pf-grid-basics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 inputs = 3 cols */
   }
 }
 
@@ -192,6 +186,32 @@
   .pf-grid-classification {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+}
+
+/* NEW: type pieces (recipe) section inside classification grid */
+
+.pf-typepieces {
+  grid-column: 1 / -1;
+  margin-top: 0.25rem;
+}
+
+.pf-typepieces-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  margin-bottom: 0.25rem;
+}
+
+.pf-grid-typepieces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.pf-typepieces-error {
+  margin-top: 0.25rem;
 }
 
 /* ================== PRICING & INVENTORY ================== */
