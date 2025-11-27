@@ -49,13 +49,15 @@ const AddOrEditCategoryType = () => {
     select: (doc) => doc || {}
   });
 
+  console.log(detail)
+
   React.useEffect(() => {
     if (!isEdit || !detail) return;
     setForm((p) => ({
       ...p,
       name: detail?.name || '',
       ar_name: detail?.ar_name || '',
-      totalStocks: detail?.totalStocks || 0,
+      totalStocks: detail?.totalStock || 0,
       totalPieceUsed: detail?.totalPieceUsed || 0,
       parent: detail?.parent?._id || detail?.parent?.id || detail?.parent || '',
     }));
